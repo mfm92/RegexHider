@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.actionSets">
+      <actionSet
+            label="Test Set"
+            visible="true"
+            id="org.softwarepraktikum.plugin.actionSet">
+         <menu
+               label="Folding Debug Menu"
+               id="foldingDebugMenu">
+            <separator
+                  name="foldingDebugGroup">
+            </separator>
+         </menu>
+         <action
+               accelerator="Alt+R"
+               class="org.softwarepraktikum.plugin.actions.FoldingDebugger"
+               icon="icons/sample.gif"
+               id="org.softwarepraktikum.plugin.actions.FoldingDebugger"
+               label="&amp;Folding Debug Action"
+               menubarPath="foldingDebugMenu/foldingDebugGroup"
+               toolbarPath="foldingDebugGroup"
+               tooltip="Hello, Eclipse world">
+         </action>
+      </actionSet>
+   </extension>
+   
+   <extension
+         point="org.eclipse.cdt.ui.foldingStructureProviders">
+      <provider
+            class="org.softwarepraktikum.plugin.cdtfolding.CDTFolder"
+            id="Regex C Folding"
+            name="Regex C Folding"
+            preferencesClass="org.eclipse.cdt.internal.ui.text.folding.DefaultCFoldingPreferenceBlock">
+      </provider>
+   </extension>
+   
+
+</plugin>
