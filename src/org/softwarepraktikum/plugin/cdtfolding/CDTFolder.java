@@ -12,66 +12,53 @@ import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 @SuppressWarnings("restriction")
 public class CDTFolder implements ICFoldingStructureProvider {
 
-	ITextEditor editor;
-	ProjectionViewer viewer;
 	ProjectionAnnotationModel projectionAnnotationModel;
 
-	public CDTFolder() {
-		System.out.println("Constructor of CDT Folder called!");
-		// TODO Auto-generated constructor stub
-	}
-
 	@Override
-	public void install(ITextEditor editor, ProjectionViewer viewer) {
+	public void install(final ITextEditor editor, ProjectionViewer viewer) {
 		if (editor instanceof CEditor) {
-			System.out.println("Calling install!");
-
-			this.editor = editor;
-			this.viewer = viewer;
+			((CEditor) editor).addPostSaveListener((translationUnit, monitor) -> collapse(editor));
 
 			if (viewer != null) {
-				System.out.println("Viewer isn't null.");
-				projectionAnnotationModel = viewer
-						.getProjectionAnnotationModel();
+				projectionAnnotationModel = viewer.getProjectionAnnotationModel();
+				collapse(editor);
+			}
+		}
+	}
+	
+	private void collapse (ITextEditor editor) {
+		if (projectionAnnotationModel != null) {
+			String regex = "\\bin[\\n]?t\\b";
+			String content = getCurrentEditorContent(editor);
+			
+			System.out.println(content);
 
-				// ProjectionAnnotation pa = new ProjectionAnnotation();
+			Map<Integer, Integer> newLineMap = preProcess(content);
 
-				if (projectionAnnotationModel != null) {
-					System.out.println("PAM isn't null.");
+			projectionAnnotationModel.removeAllAnnotations();
 
-					String regex = "\\bin[\\n]?t\\b";
-					String content = getCurrentEditorContent();
+			for (Map.Entry<Integer, Integer> match : getMatchingLines(
+					regex, content, newLineMap).entrySet()) {
+				ProjectionAnnotation pa = new ProjectionAnnotation();
 
-					Map<Integer, Integer> newLineMap = preProcess(content);
+				int endLine = getLineNr(match.getValue(), newLineMap);
+				int startLine = getLineNr(match.getKey(), newLineMap);
 
-					projectionAnnotationModel.removeAllAnnotations();
+				int endIdx = newLineMap.get(endLine);
+				int startIdx = newLineMap.get(startLine - 2);
 
-					for (Map.Entry<Integer, Integer> match : getMatchingLines(
-							regex, content, newLineMap).entrySet()) {
-						ProjectionAnnotation pa = new ProjectionAnnotation();
-
-						int endLine = getLineNr(match.getValue(), newLineMap);
-						int startLine = getLineNr(match.getKey(), newLineMap);
-
-						int endIdx = newLineMap.get(endLine);
-						int startIdx = newLineMap.get(startLine - 2);
-
-						projectionAnnotationModel.addAnnotation(pa,
-								new Position(startIdx, endIdx - startIdx));
-						
-						projectionAnnotationModel.collapse(pa);
-						pa.markCollapsed();
-						
-						System.out.println("Adding annotation in line " + (startLine+1));
-					}
-				}
+				projectionAnnotationModel.addAnnotation(pa,
+						new Position(startIdx, endIdx - startIdx));
+				
+				projectionAnnotationModel.collapse(pa);
+				pa.markCollapsed();
+				
+				System.out.println("Adding annotation in line " + (startLine+1));
 			}
 		}
 	}
@@ -79,11 +66,6 @@ public class CDTFolder implements ICFoldingStructureProvider {
 	@Override
 	public void uninstall() {
 		System.out.println("Calling uninstall!");
-	}
-
-	@Override
-	public void initialize() {
-		System.out.println("Calling initialize!");
 	}
 
 	private Map<Integer, Integer> preProcess(String content) {
@@ -100,14 +82,9 @@ public class CDTFolder implements ICFoldingStructureProvider {
 		return newLinePrefix;
 	}
 
-	private String getCurrentEditorContent() {
-		final IEditorPart editor = PlatformUI.getWorkbench()
-				.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		if (!(editor instanceof ITextEditor))
-			return null;
-		ITextEditor ite = (ITextEditor) editor;
-		IDocument doc = ite.getDocumentProvider().getDocument(
-				ite.getEditorInput());
+	private String getCurrentEditorContent(ITextEditor editor) {
+		IDocument doc = editor.getDocumentProvider().getDocument(
+				editor.getEditorInput());
 		return doc.get();
 	}
 
@@ -144,5 +121,10 @@ public class CDTFolder implements ICFoldingStructureProvider {
 		}
 
 		return -1;
+	}
+
+	@Override
+	public void initialize() {
+		// TODO Auto-generated method stub
 	}
 }
