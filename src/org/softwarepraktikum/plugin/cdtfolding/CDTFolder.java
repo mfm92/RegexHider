@@ -14,6 +14,11 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+/*
+ *  TODO: Add UI controls to preference page to specify regexes
+ *  Implement CDTFoldingPreferenceBlock.java for that
+ *  This is going to be the preferenceClass in the plugin.xml
+ */
 @SuppressWarnings("restriction")
 public class CDTFolder implements ICFoldingStructureProvider {
 
@@ -33,7 +38,7 @@ public class CDTFolder implements ICFoldingStructureProvider {
 	
 	private void collapse (ITextEditor editor) {
 		if (projectionAnnotationModel != null) {
-			String regex = "\\bin[\\n]?t\\b";
+			String regex = "\\baua\\b";
 			String content = getCurrentEditorContent(editor);
 			
 			System.out.println(content);

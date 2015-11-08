@@ -15,7 +15,7 @@
             </separator>
          </menu>
          <action
-               accelerator="Alt+R"
+               accelerator="Alt+Strg+R"
                class="org.softwarepraktikum.plugin.actions.FoldingDebugger"
                icon="icons/sample.gif"
                id="org.softwarepraktikum.plugin.actions.FoldingDebugger"
@@ -31,8 +31,8 @@
          point="org.eclipse.cdt.ui.foldingStructureProviders">
       <provider
             class="org.softwarepraktikum.plugin.cdtfolding.CDTFolder"
-            id="Regex C Folding"
-            name="Regex C Folding"
+            id="Regex C/C++ Folding"
+            name="Regex C/C++ Folding"
             preferencesClass="org.eclipse.cdt.internal.ui.text.folding.DefaultCFoldingPreferenceBlock">
       </provider>
    </extension>
