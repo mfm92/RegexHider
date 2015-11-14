@@ -46,7 +46,7 @@ public class CDTFolder implements ICFoldingStructureProvider {
 			Map<Integer, Integer> newLineMap = preProcess(content);
 
 			projectionAnnotationModel.removeAllAnnotations();
-
+			
 			for (Map.Entry<Integer, Integer> match : getMatchingLines(
 					regex, content, newLineMap).entrySet()) {
 				ProjectionAnnotation pa = new ProjectionAnnotation();

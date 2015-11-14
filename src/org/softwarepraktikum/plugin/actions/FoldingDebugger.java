@@ -8,6 +8,8 @@ import java.util.regex.Pattern;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -42,6 +44,14 @@ public class FoldingDebugger implements IWorkbenchWindowActionDelegate {
 		String regex = "\\bin[\\n]?t\\b";
 		String content = getCurrentEditorContent();
 
+		action.addPropertyChangeListener(new IPropertyChangeListener() {
+			
+			@Override
+			public void propertyChange(PropertyChangeEvent event) {
+				System.out.println("Action Property Change!");
+			}
+		});
+		
 		Map<Integer, Integer> newLineMap = preProcess(content);
 
 		StringBuilder display = new StringBuilder(content);

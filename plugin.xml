@@ -33,7 +33,7 @@
             class="org.softwarepraktikum.plugin.cdtfolding.CDTFolder"
             id="Regex C/C++ Folding"
             name="Regex C/C++ Folding"
-            preferencesClass="org.eclipse.cdt.internal.ui.text.folding.DefaultCFoldingPreferenceBlock">
+            preferencesClass="org.softwarepraktikum.plugin.cdtfolding.CDTFoldingPreferenceBlock">
       </provider>
    </extension>
    
