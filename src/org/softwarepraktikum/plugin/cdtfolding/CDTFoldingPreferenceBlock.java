@@ -78,7 +78,7 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 		
 		ControlFactory.createEmptySpace(inner);
 		
-		Composite group = ControlFactory.createGroup(inner, CDTFoldingConstants.TF_CHECKBOX_NAME, 2);
+		Composite group = ControlFactory.createGroup(inner, CDTFoldingConstants.TF_TEXTFIELD_NAME, 2);
 		
 		addTextField(group, CDTFoldingConstants.TF_REGEX_KEY_STR);
 
@@ -96,7 +96,7 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 	private Text addTextField(Composite composite, String key) {
 		Text t = ControlFactory.createTextField(composite);
 		
-		t.setText(store.getString(CDTFoldingConstants.TF_REGEX_KEY_STR));
+		t.setText(store.getString(key));
 		t.setSize(500, 80);
 		t.addModifyListener(e -> childPreferenceStore.setValue(key, t.getText()));
 		
