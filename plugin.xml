@@ -30,7 +30,7 @@
    <extension
          point="org.eclipse.cdt.ui.foldingStructureProviders">
       <provider
-            class="org.softwarepraktikum.plugin.cdtfolding.CDTFolder"
+            class="org.softwarepraktikum.plugin.cdtfolding.CDTFolderStructureProvider"
             id="Regex C/C++ Folding"
             name="Regex C/C++ Folding"
             preferencesClass="org.softwarepraktikum.plugin.cdtfolding.CDTFoldingPreferenceBlock">

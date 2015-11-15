@@ -25,9 +25,10 @@ public class CDTFoldingChildPreferenceStore implements IPreferenceStore {
 	IPreferenceStore child;
 	IPropertyChangeListener propertyChangeListener;
 	
-	FoldingKey[] foldingMap;
+	FoldingKey[] foldingKeys;
 	
-	boolean forceInit;
+	boolean forceInit = true;
+	boolean loaded;
 	
 	static TypeDescriptor TD_BOOLEAN = new TypeDescriptor();
 	static TypeDescriptor TD_STRING = new TypeDescriptor();
@@ -35,44 +36,52 @@ public class CDTFoldingChildPreferenceStore implements IPreferenceStore {
 	private class PropertyListener implements IPropertyChangeListener {
 		@Override
 		public void propertyChange(PropertyChangeEvent event) {
+			System.out.println("PropertyListener::PropertyChange(PropertyChangeEvent) called!");
+			
 			FoldingKey key = findFoldingKey(event.getProperty());
-			if (key != null)
+			
+			if (key != null) {
 				propagateProperty(key); 
+			}
 		}
 	}
 	
 	public void propagate() {
-		for (FoldingKey foldingKey : foldingMap) {
+		for (FoldingKey foldingKey : foldingKeys) {
 			propagateProperty(foldingKey);
 		}
 	}
 	
-	private void propagateProperty (FoldingKey key) {
-		if (parent.isDefault(key.key)) {
-			if (!child.isDefault(key.key)) {
-				child.setToDefault(key.key);
-			}
-			
-			return;
-		}
+	private void propagateProperty (FoldingKey foldingKey) {		
+//		if (parent.isDefault(foldingKey.key)) {
+//			if (!child.isDefault(foldingKey.key)) {
+//				child.setToDefault(foldingKey.key);
+//			}
+//			
+//			return;
+//		}
 		
-		TypeDescriptor td = key.type;
+		TypeDescriptor td = foldingKey.type;
 		
 		if (td == TD_BOOLEAN) {
-			child.setValue(key.key, parent.getBoolean(key.key));
+			System.out.println("FoldingKey Property Boolean: " + parent.getBoolean(foldingKey.key));
+			child.setValue(foldingKey.key, parent.getBoolean(foldingKey.key));
 		} else if (td == TD_STRING) {
-			child.setValue(key.key, parent.getString(key.key));
+			System.out.println("FoldingKey Property String: " + parent.getString(foldingKey.key));
+			child.setValue(foldingKey.key, parent.getString(foldingKey.key));
 		}
 	}
 	
 	public CDTFoldingChildPreferenceStore(IPreferenceStore parent, FoldingKey[] foldingMap) {
+		System.out.println("CDTFoldingChildPreferenceStructureBlock::"
+				+ "CDTFoldingChildPreferenceStructureBlock(IPreferenceStore, FoldingKey[])");
 		this.parent = parent;
-		this.foldingMap = foldingMap;
+		this.foldingKeys = foldingMap;
 		child = new PreferenceStore();
 	}
 	
 	private FoldingKey findFoldingKey (String key) {
-		for (FoldingKey foldingKey : foldingMap) {
+		for (FoldingKey foldingKey : foldingKeys) {
 			if (foldingKey.key.equals(key)) {
 				return foldingKey;
 			}
@@ -82,7 +91,7 @@ public class CDTFoldingChildPreferenceStore implements IPreferenceStore {
 	}
 	
 	private boolean isInFoldingMap (String name) {
-		for (FoldingKey foldKey : foldingMap) {
+		for (FoldingKey foldKey : foldingKeys) {
 			if (foldKey.key.equals(name)) {
 				return true;
 			}
@@ -92,9 +101,12 @@ public class CDTFoldingChildPreferenceStore implements IPreferenceStore {
 	}
 
 	public void load() {
-		for (FoldingKey foldKey : foldingMap) {
+		System.out.println("CDTFoldingChildPreferenceStructureBlock::load() called!");
+		for (FoldingKey foldKey : foldingKeys) {
 			loadProperty(foldKey);
 		}
+		
+		loaded = true;
 	}
 	
 	private void loadProperty (FoldingKey foldKey) {
@@ -110,12 +122,13 @@ public class CDTFoldingChildPreferenceStore implements IPreferenceStore {
 	}
 	
 	public void loadDefaults() {
-		for (FoldingKey foldingKey : foldingMap) {
+		for (FoldingKey foldingKey : foldingKeys) {
 			setToDefault(foldingKey.key);
 		}
 	}
 	
 	public void start() {
+		System.out.println("CDTFoldingChildPreferenceStructureBlock::start() called!");
 		if (propertyChangeListener == null) {
 			propertyChangeListener = new PropertyListener();
 			parent.addPropertyChangeListener(propertyChangeListener);
@@ -123,6 +136,7 @@ public class CDTFoldingChildPreferenceStore implements IPreferenceStore {
 	}
 	
 	public void stop() {
+		System.out.println("CDTFoldingChildPreferenceStructureBlock::stop() called!");
 		if (propertyChangeListener == null) {
 			parent.removePropertyChangeListener(propertyChangeListener);
 			propertyChangeListener = null;
@@ -306,6 +320,7 @@ public class CDTFoldingChildPreferenceStore implements IPreferenceStore {
 	@Override
 	public void setValue(String name, String value) {
 		if (isInFoldingMap(name)) {
+			parent.setValue(name, value);
 			child.setValue(name, value);
 		}
 	}
@@ -313,8 +328,25 @@ public class CDTFoldingChildPreferenceStore implements IPreferenceStore {
 	@Override
 	public void setValue(String name, boolean value) {
 		if (isInFoldingMap(name)) {
+			parent.setValue(name, value);
 			child.setValue(name, value);
 		}
 	}
+	
+	public void addKeys(FoldingKey[] keys) {
+		if (!loaded) {
+			int overlayKeysLength = foldingKeys.length;
+			FoldingKey[] result = new FoldingKey[keys.length + overlayKeysLength];
 
+			for (int i = 0, length = overlayKeysLength; i < length; i++)
+				result[i] = foldingKeys[i];
+
+			for (int i = 0, length = keys.length; i < length; i++)
+				result[overlayKeysLength + i] = keys[i];
+
+			foldingKeys = result;
+
+			load();
+		}
+	}
 }

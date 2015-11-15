@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.cdt.ui.PreferenceConstants;
 import org.eclipse.cdt.ui.text.folding.ICFoldingPreferenceBlock;
 import org.eclipse.cdt.utils.ui.controls.ControlFactory;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -15,52 +14,55 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.softwarepraktikum.plugin.Activator;
+import org.eclipse.swt.widgets.Text;
+import org.softwarepraktikum.plugin.CDTFolderPlugin;
 
 public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 
 	IPreferenceStore store;
-	CDTFoldingChildPreferenceStore.FoldingKey[] foldingMap;
+	CDTFoldingChildPreferenceStore.FoldingKey[] foldingKeys;
 	CDTFoldingChildPreferenceStore childPreferenceStore;
 
 	protected Map<Button, String> checkBoxes = new HashMap<Button, String>();
-	private Button inactiveCDTFoldingButton;
 	
-	private SelectionListener fCheckBoxListener = new SelectionListener() {
+	private SelectionListener checkBoxListener = new SelectionListener() {
 		@Override
 		public void widgetDefaultSelected(SelectionEvent e) {
+			System.out.println("SelectionListener::WidgetDefaultSelected(SelectionEvent) called!");
 		}
 
 		@Override
-		public void widgetSelected(SelectionEvent e) {
-			Button button = (Button) e.widget;
+		public void widgetSelected(SelectionEvent event) {
+			System.out.println("SelectionListener::WidgetSelected(SelectionEvent) called!");
+			Button button = (Button) event.widget;
 			String key = checkBoxes.get(button);
 			childPreferenceStore.setValue(key, button.getSelection());
-			updateEnablement(key);
 		}
 	};
 	
 	public CDTFoldingPreferenceBlock() {
-		store = Activator.getDefault().getPreferenceStore();
-		fillOverlayMap();
+		System.out.println("CDTFoldingPreferenceBlock::CDTFoldingPreferenceBlock() called!");
 		
-		childPreferenceStore = new CDTFoldingChildPreferenceStore(store, foldingMap);
+		store = CDTFolderPlugin.getDefault().getPreferenceStore();
+		fillOverlayMap();
+		childPreferenceStore = new CDTFoldingChildPreferenceStore(store, foldingKeys);
 	}
 
 	private void fillOverlayMap() {
 		ArrayList<CDTFoldingChildPreferenceStore.FoldingKey> foldingKeys = new ArrayList<>();
 
 		foldingKeys.add(new CDTFoldingChildPreferenceStore.FoldingKey(
-				CDTFoldingChildPreferenceStore.TD_BOOLEAN, PreferenceConstants.EDITOR_FOLDING_HEADERS));
+				CDTFoldingChildPreferenceStore.TD_BOOLEAN, CDTFoldingConstants.TF_REGEX_KEY_BOOL));
+		foldingKeys.add(new CDTFoldingChildPreferenceStore.FoldingKey(
+				CDTFoldingChildPreferenceStore.TD_STRING, CDTFoldingConstants.TF_REGEX_KEY_STR));
 
-		foldingMap = foldingKeys
-				.toArray(new CDTFoldingChildPreferenceStore.FoldingKey[foldingKeys
-						.size()]);
+		this.foldingKeys = foldingKeys.toArray
+				(new CDTFoldingChildPreferenceStore.FoldingKey[foldingKeys.size()]);
 	}
 
 	@Override
 	public Control createControl(Composite parent) {
-		System.out.println("CreateControl called!");
+		System.out.println("CDTFoldingPreferenceBlock::CreateControl(Composite) called!");
 
 		childPreferenceStore.load();
 		childPreferenceStore.start();
@@ -72,35 +74,40 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 		layout.marginWidth = 0;
 		inner.setLayout(layout);
 		
-		addCheckBox(inner, "Test", "Key");
+		addCheckBox(inner, CDTFoldingConstants.TF_CHECKBOX_NAME, CDTFoldingConstants.TF_REGEX_KEY_BOOL);
 		
 		ControlFactory.createEmptySpace(inner);
 		
-		Composite group = ControlFactory.createGroup(inner, "Bla", 1);
+		Composite group = ControlFactory.createGroup(inner, CDTFoldingConstants.TF_CHECKBOX_NAME, 2);
 		
-		ControlFactory.createTextField(group);
+		addTextField(group, CDTFoldingConstants.TF_REGEX_KEY_STR);
 
 		return inner;
 	}
 	
 	private Button addCheckBox(Composite composite, String label, String key) {
-		Button b = ControlFactory.createCheckBox(composite, "test");
-		b.addSelectionListener(fCheckBoxListener);
+		Button b = ControlFactory.createCheckBox(composite, CDTFoldingConstants.TF_CHECKBOX_NAME);
+		b.addSelectionListener(checkBoxListener);
 		checkBoxes.put(b, key);
 
 		return b;
 	}
 	
-	protected void updateEnablement(String key) {
-		if (inactiveCDTFoldingButton != null &&
-				PreferenceConstants.EDITOR_FOLDING_PREPROCESSOR_BRANCHES_ENABLED.equals(key)) {
-			inactiveCDTFoldingButton.setEnabled(childPreferenceStore.getBoolean(key));
-		}
+	private Text addTextField(Composite composite, String key) {
+		Text t = ControlFactory.createTextField(composite);
+		
+		t.setText(store.getString(CDTFoldingConstants.TF_REGEX_KEY_STR));
+		t.setSize(500, 80);
+		t.addModifyListener(e -> childPreferenceStore.setValue(key, t.getText()));
+		
+		return t;
 	}
 
 	@Override
 	public void initialize() {
-		System.out.println("Initialize called!");
+		System.out.println("CDTFoldingPreferenceBlock::Initialize() called!");
+		
+		childPreferenceStore.addKeys(foldingKeys);
 		
 		for (Button button : checkBoxes.keySet()) {
 			button.setSelection(childPreferenceStore.getBoolean(checkBoxes.get(button)));
@@ -109,14 +116,14 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 
 	@Override
 	public void performOk() {
-		System.out.println("PerformOK called!");
+		System.out.println("CDTFoldingPreferenceBlock::PerformOK() called!");
 		
 		childPreferenceStore.propagate();
 	}
 
 	@Override
 	public void performDefaults() {
-		System.out.println("PerformDefaults called!");
+		System.out.println("CDTFoldingPreferenceBlock::PerformDefaults() called!");
 
 		childPreferenceStore.loadDefaults();
 		
@@ -127,6 +134,7 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 
 	@Override
 	public void dispose() {
-		System.out.println("Dispose called!");
+		System.out.println("CDTFoldingPreferenceBlock::Dispose() called!");
+		childPreferenceStore.stop();
 	}
 }

@@ -6,49 +6,37 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.cdt.internal.ui.editor.CEditor;
-import org.eclipse.cdt.ui.text.folding.ICFoldingStructureProvider;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
-import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.softwarepraktikum.plugin.CDTFolderPlugin;
 
-/*
- *  TODO: Add UI controls to preference page to specify regexes
- *  Implement CDTFoldingPreferenceBlock.java for that
- *  This is going to be the preferenceClass in the plugin.xml
- */
 @SuppressWarnings("restriction")
-public class CDTFolder implements ICFoldingStructureProvider {
+public class CDTFolder {
 
-	ProjectionAnnotationModel projectionAnnotationModel;
+	public void collapse(ITextEditor editor,
+			ProjectionAnnotationModel projectionAnnotationModel) {
+		
+		if (editor instanceof CEditor && projectionAnnotationModel != null) {
+			IPreferenceStore store = CDTFolderPlugin.getDefault()
+					.getPreferenceStore();
+			String regex = store.getString(CDTFoldingConstants.TF_REGEX_KEY_STR);
+			System.out.println("CDTFolder::collapse(ITextEditor, ProjectionAnnotationModel) called!");
+			System.out.println("The regex is: " + regex);
 
-	@Override
-	public void install(final ITextEditor editor, ProjectionViewer viewer) {
-		if (editor instanceof CEditor) {
-			((CEditor) editor).addPostSaveListener((translationUnit, monitor) -> collapse(editor));
-
-			if (viewer != null) {
-				projectionAnnotationModel = viewer.getProjectionAnnotationModel();
-				collapse(editor);
-			}
-		}
-	}
-	
-	private void collapse (ITextEditor editor) {
-		if (projectionAnnotationModel != null) {
-			String regex = "\\baua\\b";
 			String content = getCurrentEditorContent(editor);
-			
+
 			System.out.println(content);
 
 			Map<Integer, Integer> newLineMap = preProcess(content);
 
 			projectionAnnotationModel.removeAllAnnotations();
-			
-			for (Map.Entry<Integer, Integer> match : getMatchingLines(
-					regex, content, newLineMap).entrySet()) {
+
+			for (Map.Entry<Integer, Integer> match : getMatchingLines(regex,
+					content, newLineMap).entrySet()) {
 				ProjectionAnnotation pa = new ProjectionAnnotation();
 
 				int endLine = getLineNr(match.getValue(), newLineMap);
@@ -57,20 +45,16 @@ public class CDTFolder implements ICFoldingStructureProvider {
 				int endIdx = newLineMap.get(endLine);
 				int startIdx = newLineMap.get(startLine - 2);
 
-				projectionAnnotationModel.addAnnotation(pa,
-						new Position(startIdx, endIdx - startIdx));
-				
+				projectionAnnotationModel.addAnnotation(pa, new Position(
+						startIdx, endIdx - startIdx));
+
 				projectionAnnotationModel.collapse(pa);
 				pa.markCollapsed();
-				
-				System.out.println("Adding annotation in line " + (startLine+1));
+
+				System.out.println("Adding annotation in line "
+						+ (startLine + 1));
 			}
 		}
-	}
-
-	@Override
-	public void uninstall() {
-		System.out.println("Calling uninstall!");
 	}
 
 	private Map<Integer, Integer> preProcess(String content) {
@@ -126,10 +110,5 @@ public class CDTFolder implements ICFoldingStructureProvider {
 		}
 
 		return -1;
-	}
-
-	@Override
-	public void initialize() {
-		// TODO Auto-generated method stub
 	}
 }
