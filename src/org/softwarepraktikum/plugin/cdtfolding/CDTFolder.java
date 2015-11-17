@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.eclipse.cdt.internal.ui.editor.CEditor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
@@ -14,13 +13,20 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.softwarepraktikum.plugin.CDTFolderPlugin;
 
-@SuppressWarnings("restriction")
 public class CDTFolder {
+	
+	ProjectionAnnotationModel projectionAnnotationModel;
 
+	public void expand() {
+		projectionAnnotationModel.removeAllAnnotations();
+	}
+	
 	public void collapse(ITextEditor editor,
 			ProjectionAnnotationModel projectionAnnotationModel) {
 		
-		if (editor instanceof CEditor && projectionAnnotationModel != null) {
+		if (projectionAnnotationModel != null) {
+			this.projectionAnnotationModel = projectionAnnotationModel;
+			
 			IPreferenceStore store = CDTFolderPlugin.getDefault()
 					.getPreferenceStore();
 			String regex = store.getString(CDTFoldingConstants.TF_REGEX_KEY_STR);

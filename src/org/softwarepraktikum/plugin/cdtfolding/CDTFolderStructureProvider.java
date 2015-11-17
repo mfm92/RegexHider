@@ -61,6 +61,7 @@ public class CDTFolderStructureProvider implements ICFoldingStructureProvider {
 		@Override
 		public void projectionDisabled() {
 			System.out.println("ProjectionListener::ProjectionDisabled() called!");
+			folder.expand();
 		}
 	}
 
