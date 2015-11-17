@@ -20,6 +20,7 @@ import org.softwarepraktikum.plugin.CDTFolderPlugin;
 public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 
 	IPreferenceStore store;
+	
 	CDTFoldingChildPreferenceStore.FoldingKey[] foldingKeys;
 	CDTFoldingChildPreferenceStore childPreferenceStore;
 

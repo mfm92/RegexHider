@@ -1,7 +1,10 @@
 package org.softwarepraktikum.plugin.cdtfolding;
 
+import org.eclipse.cdt.core.dom.ast.IASTTranslationUnit;
 import org.eclipse.cdt.internal.ui.editor.CEditor;
+import org.eclipse.cdt.internal.ui.text.ICReconcilingListener;
 import org.eclipse.cdt.ui.text.folding.ICFoldingStructureProvider;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.source.projection.IProjectionListener;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
@@ -80,9 +83,40 @@ public class CDTFolderStructureProvider implements ICFoldingStructureProvider {
 			this.editor = null;
 		}
 		
-		if (editor instanceof CEditor) {
+		if (editor instanceof CEditor) {			
 			this.editor = editor;
 			this.projectionListener = new ProjectionListener(viewer);
+			
+			((CEditor) editor).addPostSaveListener((translationUnit, monitor) -> {
+				System.out.println("Editor.PostSaveListener()");
+			});
+			
+			((CEditor) editor).addPartPropertyListener(event -> {
+				System.out.println("Editor.PartPropertyListener()");
+			});
+			
+			((CEditor) editor).addPropertyListener((src, propId) -> {
+				System.out.println("Editor.PropertyListener()");
+			});
+			
+			((CEditor) editor).addRulerContextMenuListener(manager -> {
+				System.out.println("Editor.RCML()");
+			});
+			
+			((CEditor) editor).addReconcileListener(new ICReconcilingListener() {
+				
+				@Override
+				public void reconciled(IASTTranslationUnit ast, boolean force,
+						IProgressMonitor progressMonitor) {
+					System.out.println("Editor.ReconcilingListener.reconciled(IASTTranslationUnit, boolean, IProgressMonitor)");
+					folder.collapse(editor, viewer.getProjectionAnnotationModel());
+				}
+				
+				@Override
+				public void aboutToBeReconciled() {
+					System.out.println("Editor.ReconcilingListener.aboutToBeReconciled()");
+				}
+			});
 		}
 	}
 

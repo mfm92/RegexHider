@@ -15,7 +15,6 @@
             </separator>
          </menu>
          <action
-               accelerator="Alt+Strg+R"
                class="org.softwarepraktikum.plugin.actions.FoldingDebugger"
                icon="icons/sample.gif"
                id="org.softwarepraktikum.plugin.actions.FoldingDebugger"
