@@ -11,6 +11,9 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+// TODO: Add warnings/error messages if regular expressions entered have wrong syntax
+// TODO: Add multiple checkbox/textfield combos for various regexes, or better yet, a list
+//		 there is hopefully a corresponding createList method in ControlFactory
 @SuppressWarnings("restriction")
 public class CDTFolderStructureProvider implements ICFoldingStructureProvider {
 
@@ -87,24 +90,7 @@ public class CDTFolderStructureProvider implements ICFoldingStructureProvider {
 			this.editor = editor;
 			this.projectionListener = new ProjectionListener(viewer);
 			
-			((CEditor) editor).addPostSaveListener((translationUnit, monitor) -> {
-				System.out.println("Editor.PostSaveListener()");
-			});
-			
-			((CEditor) editor).addPartPropertyListener(event -> {
-				System.out.println("Editor.PartPropertyListener()");
-			});
-			
-			((CEditor) editor).addPropertyListener((src, propId) -> {
-				System.out.println("Editor.PropertyListener()");
-			});
-			
-			((CEditor) editor).addRulerContextMenuListener(manager -> {
-				System.out.println("Editor.RCML()");
-			});
-			
-			((CEditor) editor).addReconcileListener(new ICReconcilingListener() {
-				
+			((CEditor) editor).addReconcileListener(new ICReconcilingListener() {				
 				@Override
 				public void reconciled(IASTTranslationUnit ast, boolean force,
 						IProgressMonitor progressMonitor) {
