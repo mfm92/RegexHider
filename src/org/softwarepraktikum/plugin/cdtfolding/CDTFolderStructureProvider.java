@@ -1,24 +1,20 @@
 package org.softwarepraktikum.plugin.cdtfolding;
 
-import org.eclipse.cdt.core.dom.ast.IASTTranslationUnit;
 import org.eclipse.cdt.internal.ui.editor.CEditor;
-import org.eclipse.cdt.internal.ui.text.ICReconcilingListener;
 import org.eclipse.cdt.ui.text.folding.ICFoldingStructureProvider;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.source.projection.IProjectionListener;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-// TODO: Add warnings/error messages if regular expressions entered have wrong syntax
-// TODO: Add multiple checkbox/textfield combos for various regexes, or better yet, a list
-//		 there is hopefully a corresponding createList method in ControlFactory
+/*
+ * TODO: How to handle multiple regular expressions?
+ * TODO: Extension point: Debug, skip folded source code!
+ */
 @SuppressWarnings("restriction")
 public class CDTFolderStructureProvider implements ICFoldingStructureProvider {
 
-	ITextEditor editor;
-	IPreferenceStore parent;
+	ITextEditor editor;	
 	CDTFolder folder;
 	
 	ProjectionListener projectionListener;
@@ -34,7 +30,8 @@ public class CDTFolderStructureProvider implements ICFoldingStructureProvider {
 		 * @param viewer the viewer to register a listener with
 		 */
 		public ProjectionListener(ProjectionViewer viewer) {
-			System.out.println("ProjectionListener::ProjectionListener(ProjectionViewer) called!");
+			System.out
+					.println("CDTFolderStructureProvider.ProjectionListener.ProjectionListener()");
 			
 			this.viewer = viewer;
 			viewer.addProjectionListener(this);
@@ -44,7 +41,8 @@ public class CDTFolderStructureProvider implements ICFoldingStructureProvider {
 		 * Disposes of this listener and removes the projection listener from the viewer.
 		 */
 		public void dispose() {
-			System.out.println("ProjectionListener::Dispose() called!");
+			System.out
+					.println("CDTFolderStructureProvider.ProjectionListener.dispose()");
 			
 			if (viewer != null) {
 				viewer.removeProjectionListener(this);
@@ -57,8 +55,9 @@ public class CDTFolderStructureProvider implements ICFoldingStructureProvider {
 		 */
 		@Override
 		public void projectionEnabled() {
-			System.out.println("ProjectionListener::ProjectionEnabled() called!");
-			folder.collapse(editor, viewer.getProjectionAnnotationModel());
+			System.out
+					.println("CDTFolderStructureProvider.ProjectionListener.projectionEnabled()");
+//			folder.collapse(editor, viewer.getProjectionAnnotationModel());
 		}
 
 		/*
@@ -66,14 +65,14 @@ public class CDTFolderStructureProvider implements ICFoldingStructureProvider {
 		 */
 		@Override
 		public void projectionDisabled() {
-			System.out.println("ProjectionListener::ProjectionDisabled() called!");
-			folder.expand();
+			System.out
+					.println("CDTFolderStructureProvider.ProjectionListener.projectionDisabled()");
+//			folder.expand();
 		}
 	}
 
 	@Override public void install (final ITextEditor editor, ProjectionViewer viewer) {
-		
-		System.out.println("CDTFolderStructureProvider::Install(ITextEditor, ProjectionViewer) called!");
+		System.out.println("CDTFolderStructureProvider.install()");
 		
 		folder = new CDTFolder();
 		
@@ -86,29 +85,15 @@ public class CDTFolderStructureProvider implements ICFoldingStructureProvider {
 			this.editor = null;
 		}
 		
-		if (editor instanceof CEditor) {			
-			this.editor = editor;
-			this.projectionListener = new ProjectionListener(viewer);
-			
-			((CEditor) editor).addReconcileListener(new ICReconcilingListener() {				
-				@Override
-				public void reconciled(IASTTranslationUnit ast, boolean force,
-						IProgressMonitor progressMonitor) {
-					System.out.println("Editor.ReconcilingListener.reconciled(IASTTranslationUnit, boolean, IProgressMonitor)");
-					folder.collapse(editor, viewer.getProjectionAnnotationModel());
-				}
-				
-				@Override
-				public void aboutToBeReconciled() {
-					System.out.println("Editor.ReconcilingListener.aboutToBeReconciled()");
-				}
-			});
-		}
+		((CEditor) editor).addPostSaveListener((_$, _$$) -> folder.collapse(editor, viewer.getProjectionAnnotationModel()));
+		
+		this.editor = editor;
+		this.projectionListener = new ProjectionListener(viewer);
 	}
 
 	@Override
 	public void uninstall() {
-		System.out.println("CDTFolderStructureProvider::Uninstall() called!");
+		System.out.println("CDTFolderStructureProvider.uninstall()");
 		
 		if (editor != null) {
 			this.projectionListener.dispose();
@@ -119,6 +104,6 @@ public class CDTFolderStructureProvider implements ICFoldingStructureProvider {
 
 	@Override
 	public void initialize() {
-		System.out.println("CDTFolderStructureProvider::Initialize() called!");
+		System.out.println("CDTFolderStructureProvider.initialize()");
 	}
 }

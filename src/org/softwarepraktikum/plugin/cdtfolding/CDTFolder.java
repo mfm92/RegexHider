@@ -1,6 +1,8 @@
 package org.softwarepraktikum.plugin.cdtfolding;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,42 +16,63 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.softwarepraktikum.plugin.CDTFolderPlugin;
 
 public class CDTFolder {
-	
+
 	ProjectionAnnotationModel projectionAnnotationModel;
+	ArrayList<String> text;
+
+	boolean debug = true;
 
 	public void expand() {
 		projectionAnnotationModel.removeAllAnnotations();
 	}
-	
+
 	public void collapse(ITextEditor editor,
 			ProjectionAnnotationModel projectionAnnotationModel) {
-		
+
 		if (projectionAnnotationModel != null) {
 			this.projectionAnnotationModel = projectionAnnotationModel;
+			text = new ArrayList<>();
+
+			IPreferenceStore store = CDTFolderPlugin.getDefault().getPreferenceStore();
+			String regex = store.getString(CDTFoldingConstants.TF_REGEX_KEY_STR).
+					split(CDTFoldingConstants.REGEX_SEPARATOR)[0];
 			
-			IPreferenceStore store = CDTFolderPlugin.getDefault()
-					.getPreferenceStore();
-			String regex = store.getString(CDTFoldingConstants.TF_REGEX_KEY_STR);
-			System.out.println("CDTFolder::collapse(ITextEditor, ProjectionAnnotationModel) called!");
-			System.out.println("The regex is: " + regex);
+			System.out.println("CDTFolder.collapse()");
+
+			if (debug) {
+				System.out.println("The regex is: " + store.getString(CDTFoldingConstants.TF_REGEX_KEY_STR));
+				
+				System.out.println("Separated: ");
+				
+				for (String r : store.getString(CDTFoldingConstants.TF_REGEX_KEY_STR)
+						.split(CDTFoldingConstants.REGEX_SEPARATOR)) {
+					System.out.println(r);
+				}
+				
+				System.out.println("Final choice: " + regex);
+			}
 
 			String content = getCurrentEditorContent(editor);
 
-			System.out.println(content);
-
 			Map<Integer, Integer> newLineMap = preProcess(content);
+			
+			removeProjectionAnnotations(regex);
 
-			projectionAnnotationModel.removeAllAnnotations();
+			int counter = 0;
 
 			for (Map.Entry<Integer, Integer> match : getMatchingLines(regex,
 					content, newLineMap).entrySet()) {
 				ProjectionAnnotation pa = new ProjectionAnnotation();
-
+				
 				int endLine = getLineNr(match.getValue(), newLineMap);
 				int startLine = getLineNr(match.getKey(), newLineMap);
+				
+				int endIdx = endLine + 1 > newLineMap.size() ? content.length() : 
+					(newLineMap.get(startLine + 1));
+				
+				int startIdx = newLineMap.get(startLine == 1 ? startLine : startLine - 1);
 
-				int endIdx = newLineMap.get(endLine);
-				int startIdx = newLineMap.get(startLine - 2);
+				pa.setText(text.get(counter++));
 
 				projectionAnnotationModel.addAnnotation(pa, new Position(
 						startIdx, endIdx - startIdx));
@@ -57,9 +80,38 @@ public class CDTFolder {
 				projectionAnnotationModel.collapse(pa);
 				pa.markCollapsed();
 
-				System.out.println("Adding annotation in line "
-						+ (startLine + 1));
+				if (debug) {
+					System.out.println("Adding annotation in line " + startLine);
+				}
 			}
+		}
+	}
+	
+	private void removeProjectionAnnotations(String regex) {
+		ArrayList<ProjectionAnnotation> annotationsToRemove = new ArrayList<>();
+		
+		@SuppressWarnings("unchecked")
+		Iterator<ProjectionAnnotation> paIt = projectionAnnotationModel
+				.getAnnotationIterator();
+
+		while (paIt.hasNext()) {
+			ProjectionAnnotation a = paIt.next();
+
+			if (debug) {
+				System.out.format("Current annotation: %s", a.getText());
+				
+				Pattern regexPattern = Pattern.compile(regex);
+
+				Matcher regexMatcher = regexPattern.matcher(a.getText());
+				
+				if (!regexMatcher.find() || true) {
+					annotationsToRemove.add(a);
+				}
+			}
+		}
+
+		for (ProjectionAnnotation pa : annotationsToRemove) {
+			projectionAnnotationModel.removeAnnotation(pa);
 		}
 	}
 
@@ -70,7 +122,7 @@ public class CDTFolder {
 
 		for (int idx = 0; idx < content.length(); idx++) {
 			if (content.charAt(idx) == '\n') {
-				newLinePrefix.put(counter++, idx);
+				newLinePrefix.put(++counter, idx);
 			}
 		}
 
@@ -93,6 +145,7 @@ public class CDTFolder {
 
 		while (regexMatcher.find()) {
 			matchList.put(regexMatcher.start(), regexMatcher.end());
+			text.add(regexMatcher.group());
 		}
 
 		return matchList;
@@ -100,14 +153,14 @@ public class CDTFolder {
 
 	private int getLineNr(int idx, Map<Integer, Integer> newLineMap) {
 
-		int b = 0;
+		int b = 1;
 		int e = newLineMap.size();
 
 		while (b <= e) {
 			int mid = (b + e) / 2;
 
 			if (newLineMap.get(mid) <= idx && newLineMap.get(mid + 1) >= idx) {
-				return mid + 2;
+				return mid + 1;
 			} else if (newLineMap.get(mid) > idx) {
 				e = mid - 1;
 			} else {
@@ -115,6 +168,6 @@ public class CDTFolder {
 			}
 		}
 
-		return -1;
+		return e <= 0 ? 1 : newLineMap.size() - 1;
 	}
 }

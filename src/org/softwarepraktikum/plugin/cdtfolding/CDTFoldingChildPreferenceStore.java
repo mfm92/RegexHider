@@ -36,7 +36,8 @@ public class CDTFoldingChildPreferenceStore implements IPreferenceStore {
 	private class PropertyListener implements IPropertyChangeListener {
 		@Override
 		public void propertyChange(PropertyChangeEvent event) {
-			System.out.println("PropertyListener::PropertyChange(PropertyChangeEvent) called!");
+			System.out
+					.println("CDTFoldingChildPreferenceStore.PropertyListener.propertyChange()");
 			
 			FoldingKey key = findFoldingKey(event.getProperty());
 			
@@ -61,20 +62,21 @@ public class CDTFoldingChildPreferenceStore implements IPreferenceStore {
 //			return;
 //		}
 		
+		System.out
+				.println("CDTFoldingChildPreferenceStore.propagateProperty()");
+		
 		TypeDescriptor td = foldingKey.type;
 		
 		if (td == TD_BOOLEAN) {
-			System.out.println("FoldingKey Property Boolean: " + parent.getBoolean(foldingKey.key));
 			child.setValue(foldingKey.key, parent.getBoolean(foldingKey.key));
 		} else if (td == TD_STRING) {
-			System.out.println("FoldingKey Property String: " + parent.getString(foldingKey.key));
 			child.setValue(foldingKey.key, parent.getString(foldingKey.key));
 		}
 	}
 	
 	public CDTFoldingChildPreferenceStore(IPreferenceStore parent, FoldingKey[] foldingMap) {
-		System.out.println("CDTFoldingChildPreferenceStructureBlock::"
-				+ "CDTFoldingChildPreferenceStructureBlock(IPreferenceStore, FoldingKey[])");
+		System.out
+				.println("CDTFoldingChildPreferenceStore.CDTFoldingChildPreferenceStore()");
 		this.parent = parent;
 		this.foldingKeys = foldingMap;
 		child = new PreferenceStore();
@@ -101,7 +103,7 @@ public class CDTFoldingChildPreferenceStore implements IPreferenceStore {
 	}
 
 	public void load() {
-		System.out.println("CDTFoldingChildPreferenceStructureBlock::load() called!");
+		System.out.println("CDTFoldingChildPreferenceStore.load()");
 		for (FoldingKey foldKey : foldingKeys) {
 			loadProperty(foldKey);
 		}
@@ -122,13 +124,15 @@ public class CDTFoldingChildPreferenceStore implements IPreferenceStore {
 	}
 	
 	public void loadDefaults() {
+		System.out.println("CDTFoldingChildPreferenceStore.loadDefaults()");
+		
 		for (FoldingKey foldingKey : foldingKeys) {
 			setToDefault(foldingKey.key);
 		}
 	}
 	
 	public void start() {
-		System.out.println("CDTFoldingChildPreferenceStructureBlock::start() called!");
+		System.out.println("CDTFoldingChildPreferenceStore.start()");
 		if (propertyChangeListener == null) {
 			propertyChangeListener = new PropertyListener();
 			parent.addPropertyChangeListener(propertyChangeListener);
@@ -136,7 +140,7 @@ public class CDTFoldingChildPreferenceStore implements IPreferenceStore {
 	}
 	
 	public void stop() {
-		System.out.println("CDTFoldingChildPreferenceStructureBlock::stop() called!");
+		System.out.println("CDTFoldingChildPreferenceStore.stop()");
 		if (propertyChangeListener == null) {
 			parent.removePropertyChangeListener(propertyChangeListener);
 			propertyChangeListener = null;

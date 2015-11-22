@@ -14,6 +14,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.softwarepraktikum.plugin.CDTFolderPlugin;
+import org.softwarepraktikum.plugin.cdtfolding.CDTFoldingConstants;
 
 /**
  * Our sample action implements workbench action delegate. The action proxy will
@@ -26,10 +28,13 @@ import org.eclipse.ui.texteditor.ITextEditor;
 public class FoldingDebugger implements IWorkbenchWindowActionDelegate {
 	private IWorkbenchWindow window;
 
+	boolean debug = true;
+
 	/**
 	 * The constructor.
 	 */
 	public FoldingDebugger() {
+		System.out.println("FoldingDebugger.FoldingDebugger()");
 	}
 
 	/**
@@ -39,28 +44,31 @@ public class FoldingDebugger implements IWorkbenchWindowActionDelegate {
 	 * @see IWorkbenchWindowActionDelegate#run
 	 */
 	public void run(IAction action) {
-		String regex = "\\bin[\\n]?t\\b";
+		System.out.println("FoldingDebugger.run()");
+		
+		String regex = CDTFolderPlugin.getDefault().getPreferenceStore()
+				.getString(CDTFoldingConstants.TF_REGEX_KEY_STR);
 		String content = getCurrentEditorContent();
 
-		action.addPropertyChangeListener(event -> System.out.println("Action Property Change!"));
-		
+		action.addPropertyChangeListener(event -> System.out
+				.println("Action Property Change!"));
+
 		Map<Integer, Integer> newLineMap = preProcess(content);
 
 		StringBuilder display = new StringBuilder(content);
 
 		for (Map.Entry<Integer, Integer> match : getMatchingLines(regex,
 				content, newLineMap).entrySet()) {
+
+			int start = getLineNr(match.getKey(), newLineMap);
+			int end = getLineNr(match.getValue(), newLineMap);
+
 			display.append(String.format("IDX from %d to %d, Lines %d to %d\n",
-					match.getKey(), match.getValue(),
-					getLineNr(match.getKey(), newLineMap),
-					getLineNr(match.getValue(), newLineMap)));
+					match.getKey(), match.getValue(), start, end));
 		}
 
-		MessageDialog.openInformation(
-				window.getShell(),
-				"Plugin",
-				"Hello, Eclipse world, your text is: "
-						+ display.toString());
+		MessageDialog.openInformation(window.getShell(), "Plugin",
+				"Hello, Eclipse world, your text is: " + display.toString());
 
 		System.out.println(display.toString());
 	}
@@ -73,6 +81,7 @@ public class FoldingDebugger implements IWorkbenchWindowActionDelegate {
 	 * @see IWorkbenchWindowActionDelegate#selectionChanged
 	 */
 	public void selectionChanged(IAction action, ISelection selection) {
+		System.out.println("FoldingDebugger.selectionChanged()");
 	}
 
 	/**
@@ -82,6 +91,7 @@ public class FoldingDebugger implements IWorkbenchWindowActionDelegate {
 	 * @see IWorkbenchWindowActionDelegate#dispose
 	 */
 	public void dispose() {
+		System.out.println("FoldingDebugger.dispose()");
 	}
 
 	/**
@@ -91,6 +101,8 @@ public class FoldingDebugger implements IWorkbenchWindowActionDelegate {
 	 * @see IWorkbenchWindowActionDelegate#init
 	 */
 	public void init(IWorkbenchWindow window) {
+		System.out.println("FoldingDebugger.init()");
+		
 		this.window = window;
 	}
 
@@ -101,7 +113,7 @@ public class FoldingDebugger implements IWorkbenchWindowActionDelegate {
 
 		for (int idx = 0; idx < content.length(); idx++) {
 			if (content.charAt(idx) == '\n') {
-				newLinePrefix.put(counter++, idx);
+				newLinePrefix.put(++counter, idx);
 			}
 		}
 
@@ -135,22 +147,49 @@ public class FoldingDebugger implements IWorkbenchWindowActionDelegate {
 	}
 
 	private int getLineNr(int idx, Map<Integer, Integer> newLineMap) {
-		
-		int b = 0;
+
+		int b = 1;
 		int e = newLineMap.size();
-		
+
+		if (debug) {
+			System.out.println("GetLineNr is looking for index: " + idx);
+		}
+
 		while (b <= e) {
-			int mid = (b+e) / 2;
-			
-			if (newLineMap.get(mid) <= idx && newLineMap.get(mid + 1) >= idx) {
-				return mid + 2;
+			int mid = (b + e) / 2;
+
+			if (debug) {
+				System.out.println(String.format("Is it between %d and %d?",
+						newLineMap.get(mid), newLineMap.get(mid + 1)));
+			}
+
+			if (newLineMap.get(mid) <= idx && newLineMap.get(mid + 1) > idx) {
+
+				if (debug) {
+					System.out.println("Yes it is!");
+				}
+
+				return mid + 1;
 			} else if (newLineMap.get(mid) > idx) {
+
+				if (debug) {
+					System.out.println("Nope, somewhere lower.");
+				}
+
 				e = mid - 1;
 			} else {
+				if (debug) {
+					System.out.println("Nope, somewhere higher.");
+				}
+				
 				b = mid + 1;
 			}
 		}
 		
-		return -1;
+		if (debug) {
+			System.out.format("I'm returning %d then.", e <= 0 ? 1 : newLineMap.size());
+		}
+
+		return e <= 0 ? 1 : newLineMap.size();
 	}
 }
