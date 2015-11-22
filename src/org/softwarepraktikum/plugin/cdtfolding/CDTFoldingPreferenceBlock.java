@@ -3,6 +3,7 @@ package org.softwarepraktikum.plugin.cdtfolding;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -29,47 +30,42 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 	enum Move {
 		UP, DOWN
 	};
-	
+
 	IPreferenceStore store;
 
 	CDTFoldingChildPreferenceStore.FoldingKey[] foldingKeys;
 	CDTFoldingChildPreferenceStore childPreferenceStore;
-	
+
 	CheckboxTableViewer cbtViewer;
-	
-	ArrayList<String> regexes = new ArrayList<>();
-	
+
+	HashSet<String> regexes = new HashSet<>();
+
 	Label errorLabel;
 	Label currentRegexLabel;
-	
+
 	public CDTFoldingPreferenceBlock() {
-		System.out
-				.println("CDTFoldingPreferenceBlock.CDTFoldingPreferenceBlock()");
+		System.out.println("CDTFoldingPreferenceBlock.CDTFoldingPreferenceBlock()");
 
 		store = CDTFolderPlugin.getDefault().getPreferenceStore();
 		fillOverlayMap();
-		childPreferenceStore = new CDTFoldingChildPreferenceStore(store,
-				foldingKeys);
+		childPreferenceStore = new CDTFoldingChildPreferenceStore(store, foldingKeys);
 	}
 
-	private void fillOverlayMap() {
+	private void fillOverlayMap () {
 		ArrayList<CDTFoldingChildPreferenceStore.FoldingKey> foldingKeys = new ArrayList<>();
 
 		foldingKeys.add(new CDTFoldingChildPreferenceStore.FoldingKey(
-				CDTFoldingChildPreferenceStore.TD_STRING,
-				CDTFoldingConstants.TF_REGEX_KEY_STR));
-		
-		foldingKeys.add(new CDTFoldingChildPreferenceStore.FoldingKey(
-				CDTFoldingChildPreferenceStore.TD_STRING,
-				CDTFoldingConstants.ENTIRE_INPUT));
+				CDTFoldingChildPreferenceStore.TD_STRING, CDTFoldingConstants.TF_REGEX_KEY_STR));
 
-		this.foldingKeys = foldingKeys
-				.toArray(new CDTFoldingChildPreferenceStore.FoldingKey[foldingKeys
-						.size()]);
+		foldingKeys.add(new CDTFoldingChildPreferenceStore.FoldingKey(
+				CDTFoldingChildPreferenceStore.TD_STRING, CDTFoldingConstants.ENTIRE_INPUT));
+
+		this.foldingKeys = foldingKeys.toArray(new CDTFoldingChildPreferenceStore.FoldingKey[foldingKeys
+				.size()]);
 	}
 
 	@Override
-	public Control createControl(Composite parent) {
+	public Control createControl (Composite parent) {
 		System.out.println("CDTFoldingPreferenceBlock.createControl()");
 
 		childPreferenceStore.load();
@@ -78,29 +74,28 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 		Composite inner = new Composite(parent, SWT.NONE);
 		setLayout(inner);
 
-		Composite group = ControlFactory.createGroup(inner,
-				CDTFoldingConstants.TF_TEXTFIELD_NAME, 1);
+		Composite group = ControlFactory.createGroup(inner, CDTFoldingConstants.TF_TEXTFIELD_NAME, 1);
 
 		Text t = addTextField(group);
 
 		ControlFactory.createEmptySpace(inner);
 
 		cbtViewer = addCBTViewer(inner);
-		
+
 		Composite editButtons = ControlFactory.createComposite(group, 4);
-		
+
 		addButton(editButtons, t);
 		removeButton(editButtons);
-		
+
 		moveButton(editButtons, Move.UP);
 		moveButton(editButtons, Move.DOWN);
-		
+
 		addErrorLabel(inner);
 		currentRegexLabel(inner);
 
 		return inner;
 	}
-	
+
 	private void setLayout (Composite parent) {
 		GridLayout layout = new GridLayout(1, true);
 
@@ -108,48 +103,49 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 		layout.marginWidth = 0;
 		parent.setLayout(layout);
 	}
-	
+
 	private CheckboxTableViewer addCBTViewer (Composite parent) {
-		CheckboxTableViewer cbtViewer = ControlFactory.createListViewer(parent,
-				new String[]{}, 420, 300, SWT.V_SCROLL);
+		CheckboxTableViewer cbtViewer = ControlFactory.createListViewer(parent, new String[] {}, 420, 300,
+				SWT.V_SCROLL);
 		cbtViewer.setContentProvider(new ArrayContentProvider());
 		cbtViewer.setInput(new ArrayList<String>());
 
-		cbtViewer.addCheckStateListener(event -> {
-			System.out
-				.println("CDTFoldingPreferenceBlock.createControl(...).new ICheckStateListener() {...}.checkStateChanged()");
+		cbtViewer
+				.addCheckStateListener(event -> {
+					System.out
+							.println("CDTFoldingPreferenceBlock.createControl(...).new ICheckStateListener() {...}.checkStateChanged()");
 
-			if (event.getChecked()) {
-				regexes.add((String) event.getElement());
-			} else {
-				regexes.remove((String) event.getElement());
-			}
+					if (event.getChecked()) {
+						regexes.add((String) event.getElement());
+					} else {
+						regexes.remove((String) event.getElement());
+					}
 
-			updateCurrentRegex();
-		});
+					updateCurrentRegex();
+				});
 
 		return cbtViewer;
 	}
 
-	private Button addButton(Composite editButtons, Text t) {
+	private Button addButton (Composite editButtons, Text t) {
 		Button addButton = ControlFactory.createPushButton(editButtons, "Add...");
 
 		addButton.addMouseListener(new MouseListener() {
 
 			@Override
-			public void mouseUp(MouseEvent e) {
-				System.out
-						.println("CDTFoldingPreferenceBlock.createControl(...).new MouseListener() {...}.mouseUp()");
+			public void mouseUp (MouseEvent e) {
+				System.out.println("CDTFoldingPreferenceBlock.createControl(...).new MouseListener() {...}.mouseUp()");
 
 				@SuppressWarnings("unchecked")
-				ArrayList<String> input = (ArrayList<String>) cbtViewer
-						.getInput();
-				
+				ArrayList<String> input = (ArrayList<String>) cbtViewer.getInput();
+
 				try {
 					Pattern.compile(t.getText());
+					
 					errorLabel.setVisible(false);
 					input.add(t.getText());
 					cbtViewer.setInput(input);
+					
 					updateCurrentRegex();
 				} catch (PatternSyntaxException psyex) {
 					errorLabel.setVisible(true);
@@ -157,31 +153,29 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 			}
 
 			@Override
-			public void mouseDown(MouseEvent e) {
+			public void mouseDown (MouseEvent e) {
 				System.out
 						.println("CDTFoldingPreferenceBlock.createControl(...).new MouseListener() {...}.mouseDown()");
 			}
 
 			@Override
-			public void mouseDoubleClick(MouseEvent e) {
+			public void mouseDoubleClick (MouseEvent e) {
 				System.out
 						.println("CDTFoldingPreferenceBlock.createControl(...).new MouseListener() {...}.mouseDoubleClick()");
 			}
 		});
-		
+
 		return addButton;
 	}
-	
-	private Button removeButton(Composite editButtons) {
-		Button removeButton = ControlFactory.createPushButton(editButtons,
-				"Remove...");
+
+	private Button removeButton (Composite editButtons) {
+		Button removeButton = ControlFactory.createPushButton(editButtons, "Remove...");
 
 		removeButton.addMouseListener(new MouseListener() {
 
 			@Override
-			public void mouseUp(MouseEvent e) {
-				System.out
-						.println("CDTFoldingPreferenceBlock.createControl(...).new MouseListener() {...}.mouseUp()");
+			public void mouseUp (MouseEvent e) {
+				System.out.println("CDTFoldingPreferenceBlock.createControl(...).new MouseListener() {...}.mouseUp()");
 
 				String selection = cbtViewer.getSelection().toString();
 				selection = selection.substring(1, selection.length() - 1);
@@ -190,7 +184,7 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 				ArrayList<String> input = (ArrayList<String>) cbtViewer.getInput();
 
 				input.remove(selection);
-				
+
 				if (cbtViewer.getChecked(selection)) {
 					regexes.remove(selection);
 					updateCurrentRegex();
@@ -201,87 +195,96 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 			}
 
 			@Override
-			public void mouseDown(MouseEvent e) {
-				System.out
-						.println("CDTFoldingPreferenceBlock.createControl(...).new MouseListener() {...}.mouseDown()");
+			public void mouseDown (MouseEvent e) {
+				System.out.println("CDTFoldingPreferenceBlock.createControl(...).new MouseListener() {...}.mouseDown()");
 			}
 
 			@Override
-			public void mouseDoubleClick(MouseEvent e) {
+			public void mouseDoubleClick (MouseEvent e) {
 				System.out
 						.println("CDTFoldingPreferenceBlock.createControl(...).new MouseListener() {...}.mouseDoubleClick()");
 			}
 		});
-		
+
 		return removeButton;
 	}
-	
+
 	private Button moveButton (Composite parent, Move move) {
 		String label;
-		
+
 		switch (move) {
-			case UP: label = "Move up..."; break;
-			case DOWN: label = "Move down..."; break;
-			default: label = "Move..."; break;
+			case UP:
+				label = "Move up...";
+				break;
+			case DOWN:
+				label = "Move down...";
+				break;
+			default:
+				label = "Move...";
+				break;
 		}
-		
+
 		Button moveUpButton = ControlFactory.createPushButton(parent, label);
-		
+
 		moveUpButton.addMouseListener(new MouseListener() {
-			
+
 			@Override
-			public void mouseUp(MouseEvent e) {
+			public void mouseUp (MouseEvent e) {
 				System.out
 						.println("CDTFoldingPreferenceBlock.moveUpButton(...).new MouseListener() {...}.mouseUp()");
-				
+
 				String selection = cbtViewer.getSelection().toString();
 				selection = selection.substring(1, selection.length() - 1);
 
 				@SuppressWarnings("unchecked")
 				ArrayList<String> input = (ArrayList<String>) cbtViewer.getInput();
-				
+
 				int idx = -1;
-				
+
 				for (int i = 0; i < input.size(); i++) {
 					if (input.get(i).equals(selection)) idx = i;
 				}
-				
+
 				if (idx != -1) {
 					input.remove(selection);
-					
+
 					switch (move) {
-						case UP: input.add(idx > 0 ? idx - 1 : idx, selection); break;
-						case DOWN: input.add(idx < input.size() ? idx + 1 : idx, selection); break;
-						default: input.add(idx, selection); break;
-					}	
+						case UP:
+							input.add(idx > 0 ? idx - 1 : idx, selection);
+							break;
+						case DOWN:
+							input.add(idx < input.size() ? idx + 1 : idx, selection);
+							break;
+						default:
+							input.add(idx, selection);
+							break;
+					}
 				}
-				
+
 				cbtViewer.setInput(input);
-				
+
 				updateCurrentRegex();
 			}
-			
+
 			@Override
-			public void mouseDown(MouseEvent e) {
-				System.out
-						.println("CDTFoldingPreferenceBlock.moveUpButton(...).new MouseListener() {...}.mouseDown()");
+			public void mouseDown (MouseEvent e) {
+				System.out.println("CDTFoldingPreferenceBlock.moveUpButton(...).new MouseListener() {...}.mouseDown()");
 			}
-			
+
 			@Override
-			public void mouseDoubleClick(MouseEvent e) {
-				System.out
-						.println("CDTFoldingPreferenceBlock.moveUpButton(...).new MouseListener() {...}.mouseDoubleClick()");
+			public void mouseDoubleClick (MouseEvent e) {
+				System.out.println("CDTFoldingPreferenceBlock.moveUpButton(...).new MouseListener() {...}.mouseDoubleClick()");
 			}
 		});
-		
+
 		return moveUpButton;
 	}
 
-	private Text addTextField(Composite composite) {
+	private Text addTextField (Composite composite) {
 		Text t = ControlFactory.createTextField(composite);
 
 		t.setSize(500, 80);
-		t.addModifyListener(e -> {			
+		t.addModifyListener(e -> {
 			try {
 				Pattern.compile(t.getText());
 				errorLabel.setVisible(false);
@@ -295,35 +298,34 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 
 		return t;
 	}
-	
-	private void addErrorLabel(Composite parent) {
+
+	private void addErrorLabel (Composite parent) {
 		errorLabel = ControlFactory.createBoldLabel(parent, CDTFoldingConstants.ERROR_REGEX);
 		errorLabel.setForeground(new Color(null, new RGB(254, 0, 0)));
 		errorLabel.setVisible(false);
 	}
-	
-	private void currentRegexLabel(Composite parent) {
+
+	private void currentRegexLabel (Composite parent) {
 		currentRegexLabel = ControlFactory.createLabel(parent, CDTFoldingConstants.ERROR_REGEX);
 	}
-	
+
 	@SuppressWarnings("unchecked")
-	private void updateCurrentRegex() {
+	private void updateCurrentRegex () {
 		regexes.stream().forEachOrdered(e -> System.out.println(e + " "));
 		
+		ArrayList<String> regexes = new ArrayList<>(this.regexes);
+
 		Collections.sort(regexes, (m, n) -> {
 			ArrayList<String> input = (ArrayList<String>) cbtViewer.getInput();
 
 			for (String i : input) {
 				if (i.equals(m)) {
 					return -1;
-				} else if (i.equals(n)) {
-					return 1;
-
-				}
+				} else if (i.equals(n)) { return 1; }
 			}
 			return 0;
 		});
-		
+
 		if (regexes.size() > 0) {
 			currentRegexLabel.setVisible(true);
 			currentRegexLabel.setText(CDTFoldingConstants.CURRENT_SELECTED_REGEX + regexes.get(0));
@@ -333,69 +335,85 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 	}
 
 	@Override
-	public void initialize() {
+	public void initialize () {
 		System.out.println("CDTFoldingPreferenceBlock.initialize()");
 
 		childPreferenceStore.addKeys(foldingKeys);
-		
+
 		restoreCBTViewer();
+	}
+
+	private boolean containedIn(String[] arr, String v) {
+		for (String s : arr) {
+			if (s.equals(v)) return true;
+		}
+		
+		return false;
 	}
 	
 	@SuppressWarnings("serial")
-	private void restoreCBTViewer() {
-		String[] regexes = store.getString(CDTFoldingConstants.ENTIRE_INPUT)
-				.split(CDTFoldingConstants.REGEX_SEPARATOR);
-		
+	private void restoreCBTViewer () {
+		String[] checkedRegexes = store.getString(CDTFoldingConstants.TF_REGEX_KEY_STR).split(
+				CDTFoldingConstants.REGEX_SEPARATOR);
+		String[] regexes = store.getString(CDTFoldingConstants.ENTIRE_INPUT).split(
+				CDTFoldingConstants.REGEX_SEPARATOR);
+
 		System.out.println(Arrays.toString(regexes));
 
 		cbtViewer.setInput(new ArrayList<String>() {
 			{
 				for (int i = 0; i < regexes.length; i++) {
 					add(regexes[i]);
+					cbtViewer.setChecked(regexes[i], containedIn(checkedRegexes, regexes[i]));
 				}
 			}
 		});
+		
+		for (String s : checkedRegexes) {
+			this.regexes.add(s);
+		}
 		
 		updateCurrentRegex();
 	}
 
 	@Override
-	public void performOk() {
+	public void performOk () {
 		System.out.println("CDTFoldingPreferenceBlock.performOk()");
 
 		serializeList();
 		childPreferenceStore.propagate();
 	}
-	
+
 	@SuppressWarnings("unchecked")
-	private void serializeList() {
+	private void serializeList () {
 		StringBuilder sb = new StringBuilder();
-		
+
 		for (String regex : regexes) {
 			sb.append(regex);
 			sb.append(CDTFoldingConstants.REGEX_SEPARATOR);
 		}
-		
+
 		store.setValue(CDTFoldingConstants.TF_REGEX_KEY_STR, sb.toString());
-		
+
 		sb.delete(0, sb.length());
-		
+
 		for (String regex : (ArrayList<String>) cbtViewer.getInput()) {
-			sb.append(regex); sb.append(CDTFoldingConstants.REGEX_SEPARATOR);
+			sb.append(regex);
+			sb.append(CDTFoldingConstants.REGEX_SEPARATOR);
 		}
-		
+
 		store.setValue(CDTFoldingConstants.ENTIRE_INPUT, sb.toString());
 	}
 
 	@Override
-	public void performDefaults() {
+	public void performDefaults () {
 		System.out.println("CDTFoldingPreferenceBlock.performDefaults()");
 
 		childPreferenceStore.loadDefaults();
 	}
 
 	@Override
-	public void dispose() {
+	public void dispose () {
 		System.out.println("CDTFoldingPreferenceBlock.dispose()");
 		childPreferenceStore.stop();
 	}

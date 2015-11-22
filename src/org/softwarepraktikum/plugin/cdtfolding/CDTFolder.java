@@ -2,7 +2,6 @@ package org.softwarepraktikum.plugin.cdtfolding;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,100 +21,63 @@ public class CDTFolder {
 
 	boolean debug = true;
 
-	public void expand() {
+	public void expand () {
 		projectionAnnotationModel.removeAllAnnotations();
 	}
 
-	public void collapse(ITextEditor editor,
-			ProjectionAnnotationModel projectionAnnotationModel) {
-
+	public void collapse (ITextEditor editor, ProjectionAnnotationModel projectionAnnotationModel) {
 		if (projectionAnnotationModel != null) {
 			this.projectionAnnotationModel = projectionAnnotationModel;
-			text = new ArrayList<>();
 
 			IPreferenceStore store = CDTFolderPlugin.getDefault().getPreferenceStore();
-			String regex = store.getString(CDTFoldingConstants.TF_REGEX_KEY_STR).
-					split(CDTFoldingConstants.REGEX_SEPARATOR)[0];
-			
+			String[] regexes = store.getString(CDTFoldingConstants.TF_REGEX_KEY_STR).split(
+					CDTFoldingConstants.REGEX_SEPARATOR);
+
 			System.out.println("CDTFolder.collapse()");
-
-			if (debug) {
-				System.out.println("The regex is: " + store.getString(CDTFoldingConstants.TF_REGEX_KEY_STR));
-				
-				System.out.println("Separated: ");
-				
-				for (String r : store.getString(CDTFoldingConstants.TF_REGEX_KEY_STR)
-						.split(CDTFoldingConstants.REGEX_SEPARATOR)) {
-					System.out.println(r);
-				}
-				
-				System.out.println("Final choice: " + regex);
-			}
-
-			String content = getCurrentEditorContent(editor);
-
-			Map<Integer, Integer> newLineMap = preProcess(content);
 			
-			removeProjectionAnnotations(regex);
+			projectionAnnotationModel.removeAllAnnotations();
 
-			int counter = 0;
-
-			for (Map.Entry<Integer, Integer> match : getMatchingLines(regex,
-					content, newLineMap).entrySet()) {
-				ProjectionAnnotation pa = new ProjectionAnnotation();
-				
-				int endLine = getLineNr(match.getValue(), newLineMap);
-				int startLine = getLineNr(match.getKey(), newLineMap);
-				
-				int endIdx = endLine + 1 > newLineMap.size() ? content.length() : 
-					(newLineMap.get(startLine + 1));
-				
-				int startIdx = newLineMap.get(startLine == 1 ? startLine : startLine - 1);
-
-				pa.setText(text.get(counter++));
-
-				projectionAnnotationModel.addAnnotation(pa, new Position(
-						startIdx, endIdx - startIdx));
-
-				projectionAnnotationModel.collapse(pa);
-				pa.markCollapsed();
+			for (String regex : regexes) {
+				text = new ArrayList<>();
 
 				if (debug) {
-					System.out.println("Adding annotation in line " + startLine);
+					System.out.println("Current regex is: " + regex);
+				}
+
+				String content = getCurrentEditorContent(editor);
+
+				Map<Integer, Integer> newLineMap = preProcess(content);
+
+				int counter = 0;
+
+				for (Map.Entry<Integer, Integer> match : getMatchingLines(regex, content, newLineMap)
+						.entrySet()) {
+					ProjectionAnnotation pa = new ProjectionAnnotation();
+
+					int endLine = getLineNr(match.getValue(), newLineMap);
+					int startLine = getLineNr(match.getKey(), newLineMap);
+
+					int endIdx = endLine + 1 > newLineMap.size() ? content.length() : (newLineMap
+							.get(startLine + 1));
+
+					int startIdx = newLineMap.get(startLine == 1 ? startLine : startLine - 1);
+
+					pa.setText(text.get(counter++));
+
+					projectionAnnotationModel.addAnnotation(pa, new Position(startIdx, endIdx - startIdx));
+
+					projectionAnnotationModel.collapse(pa);
+					pa.markCollapsed();
+
+					if (debug) {
+						System.out.println("Adding annotation in line " + startLine);
+					}
 				}
 			}
 		}
 	}
-	
-	private void removeProjectionAnnotations(String regex) {
-		ArrayList<ProjectionAnnotation> annotationsToRemove = new ArrayList<>();
-		
-		@SuppressWarnings("unchecked")
-		Iterator<ProjectionAnnotation> paIt = projectionAnnotationModel
-				.getAnnotationIterator();
 
-		while (paIt.hasNext()) {
-			ProjectionAnnotation a = paIt.next();
-
-			if (debug) {
-				System.out.format("Current annotation: %s", a.getText());
-				
-				Pattern regexPattern = Pattern.compile(regex);
-
-				Matcher regexMatcher = regexPattern.matcher(a.getText());
-				
-				if (!regexMatcher.find() || true) {
-					annotationsToRemove.add(a);
-				}
-			}
-		}
-
-		for (ProjectionAnnotation pa : annotationsToRemove) {
-			projectionAnnotationModel.removeAnnotation(pa);
-		}
-	}
-
-	private Map<Integer, Integer> preProcess(String content) {
+	private Map<Integer, Integer> preProcess (String content) {
 		Map<Integer, Integer> newLinePrefix = new HashMap<>();
 
 		int counter = 0;
@@ -129,14 +91,13 @@ public class CDTFolder {
 		return newLinePrefix;
 	}
 
-	private String getCurrentEditorContent(ITextEditor editor) {
-		IDocument doc = editor.getDocumentProvider().getDocument(
-				editor.getEditorInput());
+	private String getCurrentEditorContent (ITextEditor editor) {
+		IDocument doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
 		return doc.get();
 	}
 
-	private Map<Integer, Integer> getMatchingLines(String regex,
-			String content, Map<Integer, Integer> newLineMap) {
+	private Map<Integer, Integer> getMatchingLines (String regex, String content,
+			Map<Integer, Integer> newLineMap) {
 		Pattern regexPattern = Pattern.compile(regex);
 
 		Matcher regexMatcher = regexPattern.matcher(content);
@@ -151,7 +112,7 @@ public class CDTFolder {
 		return matchList;
 	}
 
-	private int getLineNr(int idx, Map<Integer, Integer> newLineMap) {
+	private int getLineNr (int idx, Map<Integer, Integer> newLineMap) {
 
 		int b = 1;
 		int e = newLineMap.size();
