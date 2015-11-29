@@ -2,13 +2,13 @@ package org.softwarepraktikum.plugin.cdtfolding;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.eclipse.cdt.ui.text.folding.ICFoldingPreferenceBlock;
 import org.eclipse.cdt.utils.ui.controls.ControlFactory;
+import org.eclipse.jface.preference.ColorSelector;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
@@ -19,6 +19,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -42,6 +43,12 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 
 	Label errorLabel;
 	Label currentRegexLabel;
+	
+	ColorSelector bgColorSelector;
+	ColorSelector fgColorSelector;
+	
+	Label bgLabel;
+	Label fgLabel;
 
 	public CDTFoldingPreferenceBlock() {
 		System.out.println("CDTFoldingPreferenceBlock.CDTFoldingPreferenceBlock()");
@@ -55,11 +62,20 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 		ArrayList<CDTFoldingChildPreferenceStore.FoldingKey> foldingKeys = new ArrayList<>();
 
 		foldingKeys.add(new CDTFoldingChildPreferenceStore.FoldingKey(
-				CDTFoldingChildPreferenceStore.TD_STRING, CDTFoldingConstants.TF_REGEX_KEY_STR));
+				CDTFoldingChildPreferenceStore.TD_STRING, CDTFoldingConstants.CHECKED_STRING_INPUT));
 
 		foldingKeys.add(new CDTFoldingChildPreferenceStore.FoldingKey(
 				CDTFoldingChildPreferenceStore.TD_STRING, CDTFoldingConstants.ENTIRE_INPUT));
-
+		
+		foldingKeys.add(new CDTFoldingChildPreferenceStore.FoldingKey(
+				CDTFoldingChildPreferenceStore.TD_STRING, CDTFoldingConstants.COMBO_CHOICE));
+		
+		foldingKeys.add(new CDTFoldingChildPreferenceStore.FoldingKey(
+				CDTFoldingChildPreferenceStore.TD_STRING, CDTFoldingConstants.COLOR_PICKED_BG));
+		
+		foldingKeys.add(new CDTFoldingChildPreferenceStore.FoldingKey(
+				CDTFoldingChildPreferenceStore.TD_STRING, CDTFoldingConstants.COLOR_PICKED_FG));
+		
 		this.foldingKeys = foldingKeys.toArray(new CDTFoldingChildPreferenceStore.FoldingKey[foldingKeys
 				.size()]);
 	}
@@ -89,9 +105,13 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 
 		moveButton(editButtons, Move.UP);
 		moveButton(editButtons, Move.DOWN);
-
+		
+		highlightOrFoldCheckBox(inner);
+		
+		Composite colorComposite = ControlFactory.createComposite(inner, 2);
+		colorScheme(colorComposite);
+		
 		addErrorLabel(inner);
-		currentRegexLabel(inner);
 
 		return inner;
 	}
@@ -110,19 +130,16 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 		cbtViewer.setContentProvider(new ArrayContentProvider());
 		cbtViewer.setInput(new ArrayList<String>());
 
-		cbtViewer
-				.addCheckStateListener(event -> {
-					System.out
-							.println("CDTFoldingPreferenceBlock.createControl(...).new ICheckStateListener() {...}.checkStateChanged()");
+		cbtViewer.addCheckStateListener(event -> {
+			System.out
+				.println("CDTFoldingPreferenceBlock.createControl(...).new ICheckStateListener() {...}.checkStateChanged()");
 
-					if (event.getChecked()) {
-						regexes.add((String) event.getElement());
-					} else {
-						regexes.remove((String) event.getElement());
-					}
-
-					updateCurrentRegex();
-				});
+			if (event.getChecked()) {
+				regexes.add((String) event.getElement());
+			} else {
+				regexes.remove((String) event.getElement());
+			}
+		});
 
 		return cbtViewer;
 	}
@@ -145,8 +162,6 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 					errorLabel.setVisible(false);
 					input.add(t.getText());
 					cbtViewer.setInput(input);
-					
-					updateCurrentRegex();
 				} catch (PatternSyntaxException psyex) {
 					errorLabel.setVisible(true);
 				}
@@ -187,7 +202,6 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 
 				if (cbtViewer.getChecked(selection)) {
 					regexes.remove(selection);
-					updateCurrentRegex();
 				}
 
 				cbtViewer.setInput(input);
@@ -213,15 +227,9 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 		String label;
 
 		switch (move) {
-			case UP:
-				label = "Move up...";
-				break;
-			case DOWN:
-				label = "Move down...";
-				break;
-			default:
-				label = "Move...";
-				break;
+			case UP: label = "Move up..."; break;
+			case DOWN: label = "Move down..."; break;
+			default: label = "Move..."; break;
 		}
 
 		Button moveUpButton = ControlFactory.createPushButton(parent, label);
@@ -262,8 +270,6 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 				}
 
 				cbtViewer.setInput(input);
-
-				updateCurrentRegex();
 			}
 
 			@Override
@@ -289,7 +295,7 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 				Pattern.compile(t.getText());
 				errorLabel.setVisible(false);
 				t.setBackground(new Color(null, new RGB(255, 255, 255)));
-				childPreferenceStore.setValue(CDTFoldingConstants.TF_REGEX_KEY_STR, t.getText());
+				childPreferenceStore.setValue(CDTFoldingConstants.CHECKED_STRING_INPUT, t.getText());
 			} catch (PatternSyntaxException psyex) {
 				errorLabel.setVisible(true);
 				t.setBackground(new Color(null, new RGB(254, 0, 0)));
@@ -303,34 +309,73 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 		errorLabel = ControlFactory.createBoldLabel(parent, CDTFoldingConstants.ERROR_REGEX);
 		errorLabel.setForeground(new Color(null, new RGB(254, 0, 0)));
 		errorLabel.setVisible(false);
+		errorLabel.setAlignment(SWT.RIGHT);
 	}
-
-	private void currentRegexLabel (Composite parent) {
-		currentRegexLabel = ControlFactory.createLabel(parent, CDTFoldingConstants.ERROR_REGEX);
-	}
-
-	@SuppressWarnings("unchecked")
-	private void updateCurrentRegex () {
-		regexes.stream().forEachOrdered(e -> System.out.println(e + " "));
+	
+	private void highlightOrFoldCheckBox (Composite parent) {
+		String[] choices = new String[]{
+			CDTFoldingConstants.COMBO_CHOICE_FOLD, CDTFoldingConstants.COMBO_CHOICE_HIGHLIGHT
+		};
 		
-		ArrayList<String> regexes = new ArrayList<>(this.regexes);
-
-		Collections.sort(regexes, (m, n) -> {
-			ArrayList<String> input = (ArrayList<String>) cbtViewer.getInput();
-
-			for (String i : input) {
-				if (i.equals(m)) {
-					return -1;
-				} else if (i.equals(n)) { return 1; }
-			}
-			return 0;
+		String defaultSelected = choices[0];
+		
+		Combo combo = ControlFactory.createSelectCombo(parent, choices, defaultSelected);
+		
+		combo.setText(store.getString(CDTFoldingConstants.COMBO_CHOICE));
+		
+		combo.addModifyListener(modifyEvent -> {
+			System.out.println("CDTFoldingPreferenceBlock.highlightOrFoldCheckBox()");
+			store.setValue(CDTFoldingConstants.COMBO_CHOICE, combo.getText());
+			turnOnOffColors();
 		});
-
-		if (regexes.size() > 0) {
-			currentRegexLabel.setVisible(true);
-			currentRegexLabel.setText(CDTFoldingConstants.CURRENT_SELECTED_REGEX + regexes.get(0));
+	}
+	
+	private void colorScheme (Composite parent) {
+		bgLabel = ControlFactory.createLabel(parent, CDTFoldingConstants.SELECT_BG);
+		bgColorSelector = new ColorSelector(parent);
+		
+		fgLabel = ControlFactory.createLabel(parent, CDTFoldingConstants.SELECT_FG);
+		fgColorSelector = new ColorSelector(parent);
+		
+		bgColorSelector.setColorValue(CDTUtilities.restoreRGB(store.getString(CDTFoldingConstants.COLOR_PICKED_BG)));
+		fgColorSelector.setColorValue(CDTUtilities.restoreRGB(store.getString(CDTFoldingConstants.COLOR_PICKED_FG)));
+		
+		bgColorSelector.addListener(event -> {
+			RGB currentRGB = bgColorSelector.getColorValue();
+			
+			StringBuilder sb = new StringBuilder();
+			sb.append(Integer.toString(currentRGB.red) + " ");
+			sb.append(Integer.toString(currentRGB.green) + " ");
+			sb.append(Integer.toString(currentRGB.blue));
+			
+			store.setValue(CDTFoldingConstants.COLOR_PICKED_BG, sb.toString());
+		});
+		
+		fgColorSelector.addListener(event -> {
+			RGB currentRGB = fgColorSelector.getColorValue();
+			
+			StringBuilder sb = new StringBuilder();
+			sb.append(Integer.toString(currentRGB.red) + " ");
+			sb.append(Integer.toString(currentRGB.green) + " ");
+			sb.append(Integer.toString(currentRGB.blue));
+			
+			store.setValue(CDTFoldingConstants.COLOR_PICKED_FG, sb.toString());
+		});
+		
+		turnOnOffColors();
+	}
+	
+	private void turnOnOffColors() {
+		if (store.getString(CDTFoldingConstants.COMBO_CHOICE).equals(CDTFoldingConstants.COMBO_CHOICE_HIGHLIGHT)) {
+			fgLabel.setVisible(true);
+			bgLabel.setVisible(true);
+			bgColorSelector.setEnabled(true);
+			fgColorSelector.setEnabled(true);
 		} else {
-			currentRegexLabel.setVisible(false);
+			fgLabel.setVisible(false);
+			bgLabel.setVisible(false);
+			bgColorSelector.setEnabled(false);
+			fgColorSelector.setEnabled(false);
 		}
 	}
 
@@ -353,11 +398,35 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 	
 	@SuppressWarnings("serial")
 	private void restoreCBTViewer () {
-		String[] checkedRegexes = store.getString(CDTFoldingConstants.TF_REGEX_KEY_STR).split(
-				CDTFoldingConstants.REGEX_SEPARATOR);
-		String[] regexes = store.getString(CDTFoldingConstants.ENTIRE_INPUT).split(
-				CDTFoldingConstants.REGEX_SEPARATOR);
+		System.out.println("CDTFoldingPreferenceBlock.restoreCBTViewer()");
+		
+		System.out.format("Checked string - restore: %s\n", store.getString(CDTFoldingConstants.CHECKED_STRING_INPUT));
+		System.out.format("Entire string - restore: %s\n", store.getString(CDTFoldingConstants.ENTIRE_INPUT));
+		
+		String checkedString = store.getString(CDTFoldingConstants.CHECKED_STRING_INPUT);
+		String entireString = store.getString(CDTFoldingConstants.ENTIRE_INPUT);
+		
+		String[] checkedRegexes;
+		String[] regexes;
+		
+		if (checkedString.length() > 1) {
+			checkedString = checkedString.substring(1, checkedString.length() - 1);
+			checkedRegexes = checkedString.split(Pattern.quote(")|("));
+		} else {
+			checkedRegexes = new String[]{};
+		}
+		
+		if (entireString.length() > 1) {
+			entireString = entireString.substring(1, entireString.length() - 1);
+			regexes = entireString.split(Pattern.quote(")|("));
+		} else {
+			regexes = new String[]{};
+		}
+		
+		System.out.format("Checked trimmed: %s\n", checkedString);
+		System.out.format("Entire trimmed: %s\n", entireString);
 
+		System.out.println(Arrays.toString(checkedRegexes));
 		System.out.println(Arrays.toString(regexes));
 
 		cbtViewer.setInput(new ArrayList<String>() {
@@ -372,37 +441,49 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 		for (String s : checkedRegexes) {
 			this.regexes.add(s);
 		}
-		
-		updateCurrentRegex();
 	}
 
 	@Override
 	public void performOk () {
 		System.out.println("CDTFoldingPreferenceBlock.performOk()");
 
-		serializeList();
+		orRegexes();
+
 		childPreferenceStore.propagate();
 	}
 
 	@SuppressWarnings("unchecked")
-	private void serializeList () {
+	private void orRegexes () {		
+		if (regexes.isEmpty()) {
+			return;
+		}
+		
 		StringBuilder sb = new StringBuilder();
 
 		for (String regex : regexes) {
+			sb.append("(");
 			sb.append(regex);
-			sb.append(CDTFoldingConstants.REGEX_SEPARATOR);
+			sb.append(")|");
 		}
+		
+		sb.delete(sb.toString().length() - 1, sb.length());
 
-		store.setValue(CDTFoldingConstants.TF_REGEX_KEY_STR, sb.toString());
+		store.setValue(CDTFoldingConstants.CHECKED_STRING_INPUT, sb.toString());
 
 		sb.delete(0, sb.length());
 
 		for (String regex : (ArrayList<String>) cbtViewer.getInput()) {
+			sb.append("(");
 			sb.append(regex);
-			sb.append(CDTFoldingConstants.REGEX_SEPARATOR);
+			sb.append(")|");
 		}
 
+		sb.delete(sb.toString().length() - 1, sb.length());
+		
 		store.setValue(CDTFoldingConstants.ENTIRE_INPUT, sb.toString());
+		
+		System.out.println("ENTIRE INPUT: " + store.getString(CDTFoldingConstants.ENTIRE_INPUT));
+		System.out.println("CHECKED REGEXES: " + store.getString(CDTFoldingConstants.CHECKED_STRING_INPUT));
 	}
 
 	@Override
@@ -416,5 +497,11 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 	public void dispose () {
 		System.out.println("CDTFoldingPreferenceBlock.dispose()");
 		childPreferenceStore.stop();
+	}
+	
+	@SuppressWarnings("unused")
+	private void repair() {
+		store.setValue(CDTFoldingConstants.CHECKED_STRING_INPUT, "");
+		store.setValue(CDTFoldingConstants.ENTIRE_INPUT, "");
 	}
 }

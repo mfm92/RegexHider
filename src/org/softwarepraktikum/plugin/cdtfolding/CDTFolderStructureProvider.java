@@ -8,7 +8,6 @@ import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 /*
- * TODO: How to handle multiple regular expressions?
  * TODO: Extension point: Debug, skip folded source code!
  */
 @SuppressWarnings("restriction")
@@ -50,25 +49,8 @@ public class CDTFolderStructureProvider implements ICFoldingStructureProvider {
 			}
 		}
 
-		/*
-		 * @see org.eclipse.jface.text.source.projection.IProjectionListener#
-		 * projectionEnabled()
-		 */
-		@Override
-		public void projectionEnabled () {
-			System.out.println("CDTFolderStructureProvider.ProjectionListener.projectionEnabled()");
-			// folder.collapse(editor, viewer.getProjectionAnnotationModel());
-		}
-
-		/*
-		 * @see org.eclipse.jface.text.source.projection.IProjectionListener#
-		 * projectionDisabled()
-		 */
-		@Override
-		public void projectionDisabled () {
-			System.out.println("CDTFolderStructureProvider.ProjectionListener.projectionDisabled()");
-			// folder.expand();
-		}
+		@Override public void projectionEnabled () {}
+		@Override public void projectionDisabled () {}
 	}
 
 	@Override
@@ -85,10 +67,9 @@ public class CDTFolderStructureProvider implements ICFoldingStructureProvider {
 
 			this.editor = null;
 		}
-
-		((CEditor) editor).addPostSaveListener( (_$, _$$) -> folder.collapse(editor,
-				viewer.getProjectionAnnotationModel()));
-
+		
+		((CEditor) editor).addPostSaveListener(($, $$) -> folder.collapse(editor, viewer));
+		
 		this.editor = editor;
 		this.projectionListener = new ProjectionListener(viewer);
 	}

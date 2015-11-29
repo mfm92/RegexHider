@@ -47,7 +47,7 @@ public class FoldingDebugger implements IWorkbenchWindowActionDelegate {
 		System.out.println("FoldingDebugger.run()");
 		
 		String regex = CDTFolderPlugin.getDefault().getPreferenceStore()
-				.getString(CDTFoldingConstants.TF_REGEX_KEY_STR);
+				.getString(CDTFoldingConstants.CHECKED_STRING_INPUT);
 		String content = getCurrentEditorContent();
 
 		action.addPropertyChangeListener(event -> System.out

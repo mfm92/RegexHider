@@ -54,14 +54,6 @@ public class CDTFoldingChildPreferenceStore implements IPreferenceStore {
 	}
 
 	private void propagateProperty (FoldingKey foldingKey) {
-		// if (parent.isDefault(foldingKey.key)) {
-		// if (!child.isDefault(foldingKey.key)) {
-		// child.setToDefault(foldingKey.key);
-		// }
-		//
-		// return;
-		// }
-
 		System.out.println("CDTFoldingChildPreferenceStore.propagateProperty()");
 
 		TypeDescriptor td = foldingKey.type;
