@@ -108,6 +108,11 @@ public class CDTFolder {
 		Map<Integer, Integer> newLineMap = preProcess(content);
 		ArrayList<StyleRange> styleRanges = new ArrayList<>();
 		
+		if (viewer.getTextWidget().getCharCount() != content.length()) {
+			viewer.getTextWidget().setText(content);
+			return;
+		}
+		
 		IPreferenceStore store = CDTFolderPlugin.getDefault().getPreferenceStore();
 
 		RGB bgRGB = CDTUtilities.restoreRGB(store.getString(CDTFoldingConstants.COLOR_PICKED_BG));
