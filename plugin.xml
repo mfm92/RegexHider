@@ -26,6 +26,40 @@
       </actionSet>
    </extension>
    
+      <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            name="Regex C/C++ Debug Configuration"
+            delegate="org.softwarepraktikum.plugin.cdthighlighting.FoldingLaunchConfigType"
+            modes="debug"
+            public="true"
+            sourceLocatorId="org.eclipse.cdt.debug.core.sourceLocator"
+            sourcePathComputerId="org.eclipse.cdt.debug.core.sourcePathComputer"
+            id="org.softwarepraktikum.plugin.cdthighlighting.ExampleLaunch">
+      </launchConfigurationType>
+   </extension>
+
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            type="org.softwarepraktikum.plugin.cdthighlighting.ExampleLaunch"
+            class="org.softwarepraktikum.plugin.cdthighlighting.CDTDebuggerTabGroup"
+            id="org.softwarepraktikum.plugin.cdthighlighting.ExampleTabGroup">
+      </launchConfigurationTabGroup>
+   </extension>
+   
+   <extension 
+         point="org.eclipse.cdt.debug.core.CDebugger">
+      <debugger
+            platform="*"
+            name="Regex C/C++ Debugger"
+            modes="run"
+            cpu="*"
+            class="org.softwarepraktikum.plugin.cdthighlighting.CDTFoldingDebugger"
+            id="org.softwarepraktikum.plugin.cdthighlighting.ExampleDebugger">
+      </debugger>
+   </extension>   
+   
    <extension
          point="org.eclipse.cdt.ui.foldingStructureProviders">
       <provider
@@ -35,6 +69,4 @@
             preferencesClass="org.softwarepraktikum.plugin.cdtfolding.CDTFoldingPreferenceBlock">
       </provider>
    </extension>
-   
-
 </plugin>

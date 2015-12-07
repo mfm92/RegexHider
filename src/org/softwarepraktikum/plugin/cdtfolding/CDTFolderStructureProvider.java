@@ -1,9 +1,16 @@
 package org.softwarepraktikum.plugin.cdtfolding;
 
 import org.eclipse.cdt.internal.ui.editor.CEditor;
+import org.eclipse.cdt.internal.ui.editor.CSourceViewer;
 import org.eclipse.cdt.ui.text.folding.ICFoldingStructureProvider;
+import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
+import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 /*

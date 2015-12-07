@@ -110,7 +110,6 @@ public class CDTFolder {
 		
 		if (viewer.getTextWidget().getCharCount() != content.length()) {
 			viewer.getTextWidget().setText(content);
-			return;
 		}
 		
 		IPreferenceStore store = CDTFolderPlugin.getDefault().getPreferenceStore();
