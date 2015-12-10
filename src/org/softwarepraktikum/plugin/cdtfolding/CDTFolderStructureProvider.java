@@ -1,26 +1,20 @@
 package org.softwarepraktikum.plugin.cdtfolding;
 
 import org.eclipse.cdt.internal.ui.editor.CEditor;
-import org.eclipse.cdt.internal.ui.editor.CSourceViewer;
 import org.eclipse.cdt.ui.text.folding.ICFoldingStructureProvider;
-import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseListener;
-import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 /*
  * TODO: Extension point: Debug, skip folded source code!
  */
+
 @SuppressWarnings("restriction")
 public class CDTFolderStructureProvider implements ICFoldingStructureProvider {
 
 	ITextEditor editor;
-	CDTFolder folder = new CDTFolder();
+	CDTFolderHighlighter folder = new CDTFolderHighlighter();
 	
 	static boolean called = false;
 	
@@ -29,17 +23,15 @@ public class CDTFolderStructureProvider implements ICFoldingStructureProvider {
 	@Override
 	public void install (final ITextEditor editor, ProjectionViewer viewer) {
 		System.out.println("CDTFolderStructureProvider.install()");
-		
-		if (!called) {
-			((CEditor) editor).addPostSaveListener(($, $$) -> {
-				System.out.println("CDTFolderStructureProvider.install()");
-				folder.collapse(editor, viewer);
-			});
-			
+
+		if (editor instanceof CEditor) {
+			if (!called) {
+				((CEditor) editor).addPostSaveListener((_$, _$$) -> folder.apply(editor, viewer));
+			}
+
 			called = true;
+			this.editor = editor;
 		}
-		
-		this.editor = editor;	
 	}
 
 	@Override

@@ -1,5 +1,7 @@
 package org.softwarepraktikum.plugin.cdtfolding;
 
+import org.eclipse.swt.custom.StyledText;
+
 public class CDTFoldingConstants {
 
 	public static String CHECKED_STRING_INPUT = "Key";
@@ -21,4 +23,6 @@ public class CDTFoldingConstants {
 	
 	static String COLOR_PICKED_BG = "BG";
 	static String COLOR_PICKED_FG = "FG";
+	
+	public static StyledText style;
 }

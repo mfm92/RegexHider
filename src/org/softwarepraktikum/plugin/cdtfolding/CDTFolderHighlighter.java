@@ -17,35 +17,36 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.softwarepraktikum.plugin.CDTFolderPlugin;
 
-public class CDTFolder {
+public class CDTFolderHighlighter {
 
 	enum ActionChoice {
 		Folding, Highlighting, Error
 	}
-	
+
 	ProjectionAnnotationModel projectionAnnotationModel;
 
 	boolean debug = true;
 
 	@SuppressWarnings("unchecked")
-	public void expand () {		
+	public void expand () {
 		Iterator<ProjectionAnnotation> it = projectionAnnotationModel.getAnnotationIterator();
-		
+
 		while (it.hasNext()) {
 			it.next().markExpanded();
 			projectionAnnotationModel.removeAnnotation(it.next());
 		}
-		
+
 		projectionAnnotationModel.removeAllAnnotations();
 	}
 
-	public void collapse (ITextEditor editor, ProjectionViewer viewer) {
+	public void apply (ITextEditor editor, ProjectionViewer viewer) {
 		System.out.println("CDTFolder.collapse()");
 
 		if (viewer.getProjectionAnnotationModel() != null) {
@@ -55,35 +56,40 @@ public class CDTFolder {
 
 			IPreferenceStore store = CDTFolderPlugin.getDefault().getPreferenceStore();
 			String regex = store.getString(CDTFoldingConstants.CHECKED_STRING_INPUT);
-			String choiceID = store.getString(CDTFoldingConstants.COMBO_CHOICE);			
-			ActionChoice actionChoice = 
-					choiceID.equals(CDTFoldingConstants.COMBO_CHOICE_FOLD) ? ActionChoice.Folding : 
-					choiceID.equals(CDTFoldingConstants.COMBO_CHOICE_HIGHLIGHT) ? ActionChoice.Highlighting :
-						ActionChoice.Error;
-			
+			String choiceID = store.getString(CDTFoldingConstants.COMBO_CHOICE);
+			ActionChoice actionChoice = choiceID.equals(CDTFoldingConstants.COMBO_CHOICE_FOLD) ? ActionChoice.Folding
+					: choiceID.equals(CDTFoldingConstants.COMBO_CHOICE_HIGHLIGHT) ? ActionChoice.Highlighting
+							: ActionChoice.Error;
+
 			if (debug) {
 				System.out.println("Current regex is: " + regex);
 				System.out.println("ActionChoice is: " + actionChoice);
 			}
-			
+
 			String content = getCurrentEditorContent(editor);
-			
+
 			switch (actionChoice) {
-				case Folding: fold(regex, content); break;
-				case Highlighting: highlight(regex, content, viewer); break;
-				case Error: showError(); break;
+				case Folding:
+					fold(regex, content);
+					break;
+				case Highlighting:
+					highlight(regex, content, viewer);
+					break;
+				case Error:
+					showError();
+					break;
 			}
 		} else {
 			System.out.println("ProjectionAnnotationModel is null!");
 		}
 	}
-	
-	private void fold(String regex, String content) {
+
+	private void fold (String regex, String content) {
 		System.out.println("CDTFolder.fold()");
 		Map<Integer, Integer> newLineMap = preProcess(content);
 
 		Set<Map.Entry<Integer, Integer>> mlSet = getMatchingLines(regex, content, newLineMap).entrySet();
-		
+
 		for (Map.Entry<Integer, Integer> match : mlSet) {
 
 			ProjectionAnnotation pa = new ProjectionAnnotation();
@@ -91,8 +97,7 @@ public class CDTFolder {
 			int endLine = getLineNr(match.getValue(), newLineMap);
 			int startLine = getLineNr(match.getKey(), newLineMap);
 
-			int endIdx = endLine + 1 > newLineMap.size() ? content.length() : (newLineMap
-					.get(startLine + 1));
+			int endIdx = endLine + 1 > newLineMap.size() ? content.length() : (newLineMap.get(startLine + 1));
 
 			int startIdx = newLineMap.get(startLine == 1 ? startLine : startLine - 1);
 
@@ -102,56 +107,60 @@ public class CDTFolder {
 			pa.markCollapsed();
 		}
 	}
-	
+
 	private void highlight (String regex, String content, ProjectionViewer viewer) {
 		System.out.println("CDTFolder.highlight()");
 		Map<Integer, Integer> newLineMap = preProcess(content);
 		ArrayList<StyleRange> styleRanges = new ArrayList<>();
-		
+		StyledText styledText = viewer.getTextWidget();
+
 		if (viewer.getTextWidget().getCharCount() != content.length()) {
 			viewer.getTextWidget().setText(content);
 		}
-		
+
+		CDTFoldingConstants.style = styledText;
+
 		IPreferenceStore store = CDTFolderPlugin.getDefault().getPreferenceStore();
 
 		RGB bgRGB = CDTUtilities.restoreRGB(store.getString(CDTFoldingConstants.COLOR_PICKED_BG));
 		RGB fgRGB = CDTUtilities.restoreRGB(store.getString(CDTFoldingConstants.COLOR_PICKED_FG));
-		
+
 		Set<Map.Entry<Integer, Integer>> mlSet = getMatchingLines(regex, content, newLineMap).entrySet();
-		
+
 		if (debug) {
 			System.out.println("Content: " + content);
 			System.out.println("Highlight regex: " + regex);
 			System.out.println("Char count (What it is...): " + content.length());
-			System.out.println("Char count (What it looks like...): " + viewer.getTextWidget().getCharCount());
+			System.out
+					.println("Char count (What it looks like...): " + viewer.getTextWidget().getCharCount());
 		}
-		
+
 		for (Map.Entry<Integer, Integer> match : mlSet) {
 			if (debug) {
 				System.out.println("Found match: " + match);
 			}
-			
-			StyleRange styleRange = new StyleRange(match.getKey(), match.getValue() - match.getKey(), 
+
+			StyleRange styleRange = new StyleRange(match.getKey(), match.getValue() - match.getKey(),
 					new Color(null, fgRGB), new Color(null, bgRGB));
 			styleRange.fontStyle = SWT.BOLD | SWT.ITALIC;
 			styleRanges.add(styleRange);
-			
-			viewer.setTextColor(styleRange.foreground, match.getKey(), styleRange.length, true);
 		}
-		
+
+		CDTFoldingConstants.style = viewer.getTextWidget();
+
 		for (StyleRange sr : styleRanges) {
 			viewer.getTextWidget().setStyleRange(sr);
 		}
 	}
-	
+
 	private void showError () {
 		System.out.println("CDTFolder.showError()");
 		Shell shell = CDTFolderPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getShell();
-		
+
 		MessageDialog.openError(shell, CDTFoldingConstants.NO_ACTION_CHOICE_TITLE,
 				CDTFoldingConstants.NO_ACTION_CHOICE_TEXT);
 	}
-	
+
 	private Map<Integer, Integer> preProcess (String content) {
 		Map<Integer, Integer> newLinePrefix = new HashMap<>();
 

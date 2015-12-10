@@ -26,6 +26,15 @@
       </actionSet>
    </extension>
    
+   <extension
+    point = "org.eclipse.ui.editors">
+	      <editor
+	            class="org.softwarepraktikum.plugin.reditor.RegexEditor"
+	            id="org.eclipse.ui.examples.contributions.editor"
+	            name="Regex C/C++ Editor">
+	      </editor>
+	</extension>
+   
       <extension
          point="org.eclipse.debug.core.launchConfigurationTypes">
       <launchConfigurationType
