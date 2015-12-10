@@ -1,4 +1,4 @@
-package org.softwarepraktikum.plugin.cdthighlighting;
+package org.softwarepraktikum.plugin.cdtregexdebugger;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;

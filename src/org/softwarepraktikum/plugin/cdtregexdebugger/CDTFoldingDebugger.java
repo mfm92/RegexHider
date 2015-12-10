@@ -1,4 +1,4 @@
-package org.softwarepraktikum.plugin.cdthighlighting;
+package org.softwarepraktikum.plugin.cdtregexdebugger;
 
 import java.io.File;
 

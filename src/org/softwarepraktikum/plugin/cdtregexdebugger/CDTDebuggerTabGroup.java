@@ -1,4 +1,4 @@
-package org.softwarepraktikum.plugin.cdthighlighting;
+package org.softwarepraktikum.plugin.cdtregexdebugger;
 
 import org.eclipse.cdt.core.CCorePlugin;
 import org.eclipse.cdt.core.model.CModelException;

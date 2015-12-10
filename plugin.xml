@@ -39,7 +39,7 @@
          point="org.eclipse.debug.core.launchConfigurationTypes">
       <launchConfigurationType
             name="Regex C/C++ Debug Configuration"
-            delegate="org.softwarepraktikum.plugin.cdthighlighting.FoldingLaunchConfigType"
+            delegate="org.softwarepraktikum.plugin.cdtregexdebugger.FoldingLaunchConfigType"
             modes="debug"
             public="true"
             sourceLocatorId="org.eclipse.cdt.debug.core.sourceLocator"
@@ -52,7 +52,7 @@
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
       <launchConfigurationTabGroup
             type="org.softwarepraktikum.plugin.cdthighlighting.ExampleLaunch"
-            class="org.softwarepraktikum.plugin.cdthighlighting.CDTDebuggerTabGroup"
+            class="org.softwarepraktikum.plugin.cdtregexdebugger.CDTDebuggerTabGroup"
             id="org.softwarepraktikum.plugin.cdthighlighting.ExampleTabGroup">
       </launchConfigurationTabGroup>
    </extension>
@@ -64,7 +64,7 @@
             name="Regex C/C++ Debugger"
             modes="run"
             cpu="*"
-            class="org.softwarepraktikum.plugin.cdthighlighting.CDTFoldingDebugger"
+            class="org.softwarepraktikum.plugin.cdtregexdebugger.CDTFoldingDebugger"
             id="org.softwarepraktikum.plugin.cdthighlighting.ExampleDebugger">
       </debugger>
    </extension>   
