@@ -1,6 +1,7 @@
 package org.softwarepraktikum.plugin.cdtfolding;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -89,25 +90,24 @@ public class CDTFolderHighlighter {
 		Map<Integer, Integer> newLineMap = preProcess(content);
 
 		Set<Map.Entry<Integer, Integer>> mlSet = getMatchingLines(regex, content, newLineMap).entrySet();
-
-		for (Map.Entry<Integer, Integer> match : mlSet) {
-
+		
+		for (FoldingSection foldedSection : getFoldedSections(newLineMap, mlSet)) {
+			System.out.println("Match start -- " + foldedSection.getStartLine());
+			System.out.println("Match end   -- " + foldedSection.getEndLine());
+			
 			ProjectionAnnotation pa = new ProjectionAnnotation();
-
-			int endLine = getLineNr(match.getValue(), newLineMap);
-			int startLine = getLineNr(match.getKey(), newLineMap);
-
-			int endIdx = endLine + 1 > newLineMap.size() ? content.length() : (newLineMap.get(startLine + 1));
-
-			int startIdx = newLineMap.get(startLine == 1 ? startLine : startLine - 1);
-
+			
+			int startIdx = newLineMap.get(foldedSection.getStartLine() - 1);
+			int endIdx = newLineMap.get(foldedSection.getEndLine() > newLineMap.size() - 1 ? 
+					foldedSection.getEndLine() - 1 : foldedSection.getEndLine());
+			
 			projectionAnnotationModel.addAnnotation(pa, new Position(startIdx, endIdx - startIdx));
 
 			projectionAnnotationModel.collapse(pa);
 			pa.markCollapsed();
 		}
 	}
-
+	
 	private void highlight (String regex, String content, ProjectionViewer viewer) {
 		System.out.println("CDTFolder.highlight()");
 		Map<Integer, Integer> newLineMap = preProcess(content);
@@ -195,6 +195,41 @@ public class CDTFolderHighlighter {
 		return matchList;
 	}
 
+	private ArrayList<FoldingSection> getFoldedSections(Map<Integer, Integer> newLineMap,
+			Set<Map.Entry<Integer, Integer>> mlSet) {
+		BitSet lineBitSet = new BitSet(newLineMap.size());
+		
+		for (Map.Entry<Integer, Integer> match : mlSet) {
+	
+			int endLine = getLineNr(match.getValue(), newLineMap);
+			int startLine = getLineNr(match.getKey(), newLineMap);
+			
+			for (int i = startLine; i <= endLine; i++) {
+				lineBitSet.set(i);
+			}
+		}
+		
+		ArrayList<FoldingSection> foldingSections = new ArrayList<>();
+		
+		for (int i = 0; i < lineBitSet.size(); i++) {
+			int counter = i;
+			
+			if (lineBitSet.get(counter)) {
+				int start = counter;
+				
+				while (lineBitSet.get(++counter)) {}
+				
+				int end = counter;
+				
+				foldingSections.add(new FoldingSection(start, end));
+				
+				i = end;
+			}
+		}
+		
+		return foldingSections;
+	}
+
 	private int getLineNr (int idx, Map<Integer, Integer> newLineMap) {
 
 		int b = 1;
@@ -213,5 +248,32 @@ public class CDTFolderHighlighter {
 		}
 
 		return e <= 0 ? 1 : newLineMap.size() - 1;
+	}
+}
+
+class FoldingSection {
+	private int startLine;
+	private int endLine;
+
+	public FoldingSection(int startLine, int endLine) {
+		super();
+		this.startLine = startLine;
+		this.endLine = endLine;
+	}
+	
+	public int getStartLine () {
+		return startLine;
+	}
+	
+	public void setStartLine (int startLine) {
+		this.startLine = startLine;
+	}
+	
+	public int getEndLine () {
+		return endLine;
+	}
+	
+	public void setEndLine (int endLine) {
+		this.endLine = endLine;
 	}
 }

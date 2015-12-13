@@ -1,7 +1,10 @@
 package org.softwarepraktikum.plugin.cdtfolding;
 
+import org.eclipse.cdt.core.model.ITranslationUnit;
 import org.eclipse.cdt.internal.ui.editor.CEditor;
+import org.eclipse.cdt.internal.ui.editor.IPostSaveListener;
 import org.eclipse.cdt.ui.text.folding.ICFoldingStructureProvider;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.ui.texteditor.ITextEditor;
@@ -15,39 +18,50 @@ import org.softwarepraktikum.plugin.reditor.RegexEditor;
 public class CDTFolderStructureProvider implements ICFoldingStructureProvider {
 
 	ITextEditor editor;
+	
 	CDTFolderHighlighter folder = new CDTFolderHighlighter();
 	
-	static boolean cCalled = false;
-	static boolean regexCalled = false;
-	
 	ProjectionAnnotationModel projectionAnnotationModel;
-
+	
+	IPostSaveListener postSaveListener;
+	
 	@Override
 	public void install (final ITextEditor editor, ProjectionViewer viewer) {
 		System.out.println("CDTFolderStructureProvider.install()");
-
-		if (editor instanceof CEditor) {
-			if (!cCalled) { 
-				((CEditor) editor).addPostSaveListener((_$, _$$) -> folder.apply(editor, viewer));
+		
+		IPostSaveListener postSaveListener = new IPostSaveListener() {
+			@Override
+			public void saved (ITranslationUnit translationUnit, IProgressMonitor monitor) {
+				folder.apply(editor, viewer);
 			}
+		};
+		
+		if (editor instanceof CEditor) {
+			((CEditor) editor).removePostSaveListener(postSaveListener);
+			((CEditor) editor).addPostSaveListener(postSaveListener);
 
-			cCalled = true;
 			this.editor = editor;
+			this.postSaveListener = postSaveListener;
 		}
 		
 		if (editor instanceof RegexEditor) {
-			if (!regexCalled) {
-				((RegexEditor) editor).addPostSaveListener((_$, _$$) -> folder.apply(editor, viewer));
-			}
+			((RegexEditor) editor).removePostSaveListener(postSaveListener);
+			((RegexEditor) editor).addPostSaveListener(postSaveListener);
 
-			regexCalled = true;
 			this.editor = editor;
+			this.postSaveListener = postSaveListener;
 		}
 	}
 
 	@Override
 	public void uninstall () {
 		System.out.println("CDTFolderStructureProvider.uninstall()");
+
+		if (editor instanceof CEditor) {
+			((CEditor) editor).removePostSaveListener(postSaveListener);
+		} else if (editor instanceof RegexEditor) {
+			((RegexEditor) editor).removePostSaveListener(postSaveListener);
+		}
 	}
 
 	@Override

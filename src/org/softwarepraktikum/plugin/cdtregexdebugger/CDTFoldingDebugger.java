@@ -12,20 +12,25 @@ import org.eclipse.debug.core.ILaunch;
 
 public class CDTFoldingDebugger implements ICDIDebugger2 {
 	
-	GDBCDIDebugger2 gdbCdiDebugger2 = new GDBCDIDebugger2();
+	GDBCDIDebugger2 debugger = new GDBCDIDebugger2();
 
 	@Override
 	public ICDISession createDebuggerSession (ILaunch launch, IBinaryObject exe, IProgressMonitor monitor)
 			throws CoreException {
 		System.out.println("CDTFoldingDebugger.createDebuggerSession()");
+				
+		ICDISession session = debugger.createDebuggerSession(launch, exe, monitor);
 		
-		return gdbCdiDebugger2.createDebuggerSession(launch, exe, monitor);
+		return session;
 	}
 
 	@Override
 	public ICDISession createSession (ILaunch launch, File executable, IProgressMonitor monitor)
 			throws CoreException {
 		System.out.println("CDTFoldingDebugger.createSession()");
-		return gdbCdiDebugger2.createSession(launch, executable, monitor);
+		
+		ICDISession session = debugger.createSession(launch, executable, monitor);
+
+		return session;
 	}
 }
