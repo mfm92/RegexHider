@@ -5,6 +5,7 @@ import org.eclipse.cdt.ui.text.folding.ICFoldingStructureProvider;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.softwarepraktikum.plugin.reditor.RegexEditor;
 
 /*
  * TODO: Extension point: Debug, skip folded source code!
@@ -16,7 +17,8 @@ public class CDTFolderStructureProvider implements ICFoldingStructureProvider {
 	ITextEditor editor;
 	CDTFolderHighlighter folder = new CDTFolderHighlighter();
 	
-	static boolean called = false;
+	static boolean cCalled = false;
+	static boolean regexCalled = false;
 	
 	ProjectionAnnotationModel projectionAnnotationModel;
 
@@ -25,11 +27,20 @@ public class CDTFolderStructureProvider implements ICFoldingStructureProvider {
 		System.out.println("CDTFolderStructureProvider.install()");
 
 		if (editor instanceof CEditor) {
-			if (!called) {
+			if (!cCalled) { 
 				((CEditor) editor).addPostSaveListener((_$, _$$) -> folder.apply(editor, viewer));
 			}
 
-			called = true;
+			cCalled = true;
+			this.editor = editor;
+		}
+		
+		if (editor instanceof RegexEditor) {
+			if (!regexCalled) {
+				((RegexEditor) editor).addPostSaveListener((_$, _$$) -> folder.apply(editor, viewer));
+			}
+
+			regexCalled = true;
 			this.editor = editor;
 		}
 	}
