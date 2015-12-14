@@ -90,7 +90,7 @@ public class CDTDebuggerLaunchConfigHelper extends CLaunchConfigurationTab {
 			setDefaults(config.getWorkingCopy());
 			debugIDText.setText("org.softwarepraktikum.plugin.cdthighlighting.ExampleDebugger");
 			debugArgsText.setText(""); 
-			projNameText.setText("");
+			projNameText.setText(projName);
 			exeNameText.setText(progName); 
 			exeArgsText.setText(projName); 
 			platformText.setText(platform);
@@ -103,20 +103,12 @@ public class CDTDebuggerLaunchConfigHelper extends CLaunchConfigurationTab {
 	public void performApply(ILaunchConfigurationWorkingCopy config) {
 		System.out.println("CDTDebuggerLaunchConfigHelper.performApply()");
 		
-		System.out.println("Project Name: " + projNameText.getText());
-		
 		config.setAttribute(ICDTLaunchConfigurationConstants.ATTR_DEBUGGER_ID, debugIDText.getText());
 		config.setAttribute(ICDTLaunchConfigurationConstants.ATTR_DEBUGGER_SPECIFIC_ATTRS_MAP, debugArgsText.getText());
 		config.setAttribute(ICDTLaunchConfigurationConstants.ATTR_PROJECT_NAME, projNameText.getText());
 		config.setAttribute(ICDTLaunchConfigurationConstants.ATTR_PROGRAM_NAME, exeNameText.getText());
 		config.setAttribute(ICDTLaunchConfigurationConstants.ATTR_PROGRAM_ARGUMENTS, exeArgsText.getText());
 		config.setAttribute(ICDTLaunchConfigurationConstants.ATTR_PLATFORM, platformText.getText());
-		
-		try {
-			System.out.println("Set to...: " + config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_PROJECT_NAME, ""));
-		} catch (Exception e) {
-			// lol
-		}
 	}
 
 	// Set default values for the six attributes

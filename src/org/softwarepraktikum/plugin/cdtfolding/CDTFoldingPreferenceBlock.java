@@ -34,13 +34,14 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 
 	IPreferenceStore store;
 
-	CDTFoldingChildPreferenceStore.FoldingKey[] foldingKeys;
 	CDTFoldingChildPreferenceStore childPreferenceStore;
 
 	CheckboxTableViewer cbtViewer;
 
 	HashSet<String> regexes = new HashSet<>();
 
+	CDTFoldingChildPreferenceStore.FoldingKey[] foldingKeys;
+	
 	Label errorLabel;
 	Label currentRegexLabel;
 	
@@ -289,16 +290,32 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 	private Text addTextField (Composite composite) {
 		Text t = ControlFactory.createTextField(composite);
 
-		t.setSize(500, 80);
+		Color bgColor = t.getBackground();
+		Color errorColor = new Color(null, new RGB(253, 0, 0));
+		
+		t.setSize(400, 80);
+		
+		/*
+		 * Check if the current user-specified regular expression is
+		 * actually valid. If not, turn the background of the text
+		 * field red. Also there's a hidden label that says "Invalid
+		 * Regular Expression!", that one will be turned visible too.
+		 */
 		t.addModifyListener(e -> {
 			try {
+				// Try to compile the regex. If it's invalid a PatternSyntaxException will be thrown.
 				Pattern.compile(t.getText());
 				errorLabel.setVisible(false);
-				t.setBackground(new Color(null, new RGB(255, 255, 255)));
+				t.setBackground(bgColor);
+				
+				// Store regex in the preference store.
 				childPreferenceStore.setValue(CDTFoldingConstants.CHECKED_STRING_INPUT, t.getText());
 			} catch (PatternSyntaxException psyex) {
+				// If all is well, set error label invisible
 				errorLabel.setVisible(true);
-				t.setBackground(new Color(null, new RGB(254, 0, 0)));
+				
+				// Also, restore the background color of the text field
+				t.setBackground(errorColor);
 			}
 		});
 
@@ -403,12 +420,18 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 		System.out.format("Checked string - restore: %s\n", store.getString(CDTFoldingConstants.CHECKED_STRING_INPUT));
 		System.out.format("Entire string - restore: %s\n", store.getString(CDTFoldingConstants.ENTIRE_INPUT));
 		
+		// All checked regexes that the user entered in the previous Eclipse instance, checked or not
+		// or-ed together at this point
 		String checkedString = store.getString(CDTFoldingConstants.CHECKED_STRING_INPUT);
+		
+		// All regexes that the user entered in the previous Eclipse instance, checked or not
+		// or-ed together at this point
 		String entireString = store.getString(CDTFoldingConstants.ENTIRE_INPUT);
 		
 		String[] checkedRegexes;
 		String[] regexes;
-		
+
+		// Split checked regex string into the single regexes it's made of...
 		if (checkedString.length() > 1) {
 			checkedString = checkedString.substring(1, checkedString.length() - 1);
 			checkedRegexes = checkedString.split(Pattern.quote(")|("));
@@ -429,6 +452,7 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 		System.out.println(Arrays.toString(checkedRegexes));
 		System.out.println(Arrays.toString(regexes));
 
+		// Add regexes to the view, check all regexes that were checked previously
 		cbtViewer.setInput(new ArrayList<String>() {
 			{
 				for (int i = 0; i < regexes.length; i++) {
@@ -455,23 +479,33 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 	@SuppressWarnings("unchecked")
 	private void orRegexes () {		
 		if (regexes.isEmpty()) {
+			store.setValue(CDTFoldingConstants.CHECKED_STRING_INPUT, "");
+			store.setValue(CDTFoldingConstants.ENTIRE_INPUT, "");
 			return;
 		}
 		
 		StringBuilder sb = new StringBuilder();
 
+		// Concatenate all regexes together that the user checked too
 		for (String regex : regexes) {
 			sb.append("(");
 			sb.append(regex);
 			sb.append(")|");
 		}
 		
+		// get rid of the trailing bar
 		sb.delete(sb.toString().length() - 1, sb.length());
 
+		// save or-ed regex in the preference store
+		// note that we'll access this in CDTFolderHighlighter.apply(ITextEditor, ProjectionViewer)!
 		store.setValue(CDTFoldingConstants.CHECKED_STRING_INPUT, sb.toString());
 
 		sb.delete(0, sb.length());
 
+		/*
+		 * Save non-checked regexes aswell, such that the user doesn't have to enter
+		 * these again when opening another instance of Eclipse.
+		 */
 		for (String regex : (ArrayList<String>) cbtViewer.getInput()) {
 			sb.append("(");
 			sb.append(regex);
@@ -480,6 +514,7 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 
 		sb.delete(sb.toString().length() - 1, sb.length());
 		
+		// store in preference store
 		store.setValue(CDTFoldingConstants.ENTIRE_INPUT, sb.toString());
 		
 		System.out.println("ENTIRE INPUT: " + store.getString(CDTFoldingConstants.ENTIRE_INPUT));

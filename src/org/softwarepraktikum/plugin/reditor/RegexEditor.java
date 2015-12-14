@@ -5,9 +5,13 @@ import org.eclipse.cdt.ui.CUIPlugin;
 import org.eclipse.cdt.ui.text.ICPartitions;
 import org.eclipse.jface.preference.IPreferenceStore;
 
+/**
+ * Extension of CEditor.
+ * The only difference to the CEditor is that the RegexEditor uses a slightly altered SourceViewerConfiguration.
+ * (see RegexSourceViewerConfiguration for more)
+ */
 @SuppressWarnings("restriction")
 public class RegexEditor extends CEditor {
-	
 	public RegexEditor() {
 		super();
 		System.out.println("RegexEditor.RegexEditor()");
