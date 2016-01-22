@@ -195,8 +195,7 @@ public class CDTFolderHighlighter {
 			System.out.println("Content: " + content);
 			System.out.println("Highlight regex: " + regex);
 			System.out.println("Char count (What it is...): " + content.length());
-			System.out
-					.println("Char count (What it looks like...): " + viewer.getTextWidget().getCharCount());
+			System.out.println("Char count (What it looks like...): " + viewer.getTextWidget().getCharCount());
 		}
 
 		// Iterate over matches...
