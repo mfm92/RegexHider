@@ -361,8 +361,8 @@ public class CDTFolderHighlighter {
 	/*
 	 * Gets the line of the editor content that a character is in. To achieve
 	 * this you pass the index of the character as the first argument and the
-	 * line map as the second argument. We'll use the line map to perform
-	 * binary search on it to return the corresponding source code line number.
+	 * line map as the second argument. We'll use the line map to perform binary
+	 * search on it to return the corresponding source code line number.
 	 */
 	private int getLineNr (int idx, Map<Integer, Integer> newLineMap) {
 

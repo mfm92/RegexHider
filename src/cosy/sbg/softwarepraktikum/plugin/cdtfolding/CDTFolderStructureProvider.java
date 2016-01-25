@@ -13,23 +13,23 @@ import cosy.sbg.softwarepraktikum.plugin.reditor.RegexEditor;
 public class CDTFolderStructureProvider implements ICFoldingStructureProvider {
 
 	ITextEditor editor;
-	
+
 	CDTFolderHighlighter folder = new CDTFolderHighlighter();
-	
+
 	ProjectionAnnotationModel projectionAnnotationModel;
-	
+
 	IPostSaveListener postSaveListener;
-	
+
 	/**
-	 * If the user opens a file with C source code, install a listener
-	 * that triggers folding/highlighting whenever the user saves the editor content.
+	 * If the user opens a file with C source code, install a listener that
+	 * triggers folding/highlighting whenever the user saves the editor content.
 	 */
 	@Override
 	public void install (final ITextEditor editor, ProjectionViewer viewer) {
 		System.out.println("CDTFolderStructureProvider.install()");
-		
+
 		IPostSaveListener postSaveListener = (t, m) -> folder.apply(editor, viewer);
-		
+
 		if (editor instanceof CEditor) {
 			((CEditor) editor).removePostSaveListener(postSaveListener);
 			((CEditor) editor).addPostSaveListener(postSaveListener);
@@ -37,7 +37,7 @@ public class CDTFolderStructureProvider implements ICFoldingStructureProvider {
 			this.editor = editor;
 			this.postSaveListener = postSaveListener;
 		}
-		
+
 		if (editor instanceof RegexEditor) {
 			((RegexEditor) editor).removePostSaveListener(postSaveListener);
 			((RegexEditor) editor).addPostSaveListener(postSaveListener);

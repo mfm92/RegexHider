@@ -44,33 +44,31 @@ public class FoldingDebuggerMenuPoint implements IWorkbenchWindowActionDelegate 
 	 * 
 	 * @see IWorkbenchWindowActionDelegate#run
 	 */
-	public void run(IAction action) {
+	public void run (IAction action) {
 		System.out.println("FoldingDebugger.run()");
-		
+
 		String regex = CDTFolderPlugin.getDefault().getPreferenceStore()
 				.getString(CDTFoldingConstants.CHECKED_STRING_INPUT);
 		String content = getCurrentEditorContent();
 
-		action.addPropertyChangeListener(event -> System.out
-				.println("Action Property Change!"));
+		action.addPropertyChangeListener(event -> System.out.println("Action Property Change!"));
 
 		Map<Integer, Integer> newLineMap = preProcess(content);
 
 		StringBuilder display = new StringBuilder();
 
-		for (Map.Entry<Integer, Integer> match : getMatchingLines(regex,
-				content, newLineMap).entrySet()) {
+		for (Map.Entry<Integer, Integer> match : getMatchingLines(regex, content, newLineMap).entrySet()) {
 
 			int start = getLineNr(match.getKey(), newLineMap);
 			int end = getLineNr(match.getValue(), newLineMap);
 
-			display.append(String.format("IDX from %d to %d, Lines %d to %d\n",
-					match.getKey(), match.getValue(), start, end));
+			display.append(String.format("IDX from %d to %d, Lines %d to %d\n", match.getKey(),
+					match.getValue(), start, end));
 		}
 
-		MessageDialog.openInformation(window.getShell(), "Plugin",
-				String.format("Hello, Eclipse world, your regex is %s and we found matches"
-						+ "here:\n\n%s", regex, display.toString()));
+		MessageDialog.openInformation(window.getShell(), "Plugin", String.format(
+				"Hello, Eclipse world, your regex is %s and we found matches" + "here:\n\n%s", regex,
+				display.toString()));
 
 		System.out.println(display.toString());
 	}
@@ -82,7 +80,7 @@ public class FoldingDebuggerMenuPoint implements IWorkbenchWindowActionDelegate 
 	 * 
 	 * @see IWorkbenchWindowActionDelegate#selectionChanged
 	 */
-	public void selectionChanged(IAction action, ISelection selection) {
+	public void selectionChanged (IAction action, ISelection selection) {
 		System.out.println("FoldingDebugger.selectionChanged()");
 	}
 
@@ -92,7 +90,7 @@ public class FoldingDebuggerMenuPoint implements IWorkbenchWindowActionDelegate 
 	 * 
 	 * @see IWorkbenchWindowActionDelegate#dispose
 	 */
-	public void dispose() {
+	public void dispose () {
 		System.out.println("FoldingDebugger.dispose()");
 	}
 
@@ -102,13 +100,13 @@ public class FoldingDebuggerMenuPoint implements IWorkbenchWindowActionDelegate 
 	 * 
 	 * @see IWorkbenchWindowActionDelegate#init
 	 */
-	public void init(IWorkbenchWindow window) {
+	public void init (IWorkbenchWindow window) {
 		System.out.println("FoldingDebugger.init()");
-		
+
 		this.window = window;
 	}
 
-	private Map<Integer, Integer> preProcess(String content) {
+	private Map<Integer, Integer> preProcess (String content) {
 		Map<Integer, Integer> newLinePrefix = new HashMap<>();
 
 		int counter = 0;
@@ -122,19 +120,17 @@ public class FoldingDebuggerMenuPoint implements IWorkbenchWindowActionDelegate 
 		return newLinePrefix;
 	}
 
-	private String getCurrentEditorContent() {
-		final IEditorPart editor = PlatformUI.getWorkbench()
-				.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		if (!(editor instanceof ITextEditor))
-			return null;
+	private String getCurrentEditorContent () {
+		final IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+				.getActiveEditor();
+		if (!(editor instanceof ITextEditor)) return null;
 		ITextEditor ite = (ITextEditor) editor;
-		IDocument doc = ite.getDocumentProvider().getDocument(
-				ite.getEditorInput());
+		IDocument doc = ite.getDocumentProvider().getDocument(ite.getEditorInput());
 		return doc.get();
 	}
 
-	private Map<Integer, Integer> getMatchingLines(String regex,
-			String content, Map<Integer, Integer> newLineMap) {
+	private Map<Integer, Integer> getMatchingLines (String regex, String content,
+			Map<Integer, Integer> newLineMap) {
 		Pattern regexPattern = Pattern.compile(regex);
 
 		Matcher regexMatcher = regexPattern.matcher(content);
@@ -148,7 +144,7 @@ public class FoldingDebuggerMenuPoint implements IWorkbenchWindowActionDelegate 
 		return matchList;
 	}
 
-	private int getLineNr(int idx, Map<Integer, Integer> newLineMap) {
+	private int getLineNr (int idx, Map<Integer, Integer> newLineMap) {
 
 		int b = 1;
 		int e = newLineMap.size();
@@ -161,8 +157,8 @@ public class FoldingDebuggerMenuPoint implements IWorkbenchWindowActionDelegate 
 			int mid = (b + e) / 2;
 
 			if (debug) {
-				System.out.println(String.format("Is it between %d and %d?",
-						newLineMap.get(mid), newLineMap.get(mid + 1)));
+				System.out.println(String.format("Is it between %d and %d?", newLineMap.get(mid),
+						newLineMap.get(mid + 1)));
 			}
 
 			if (newLineMap.get(mid) <= idx && newLineMap.get(mid + 1) > idx) {
@@ -183,11 +179,11 @@ public class FoldingDebuggerMenuPoint implements IWorkbenchWindowActionDelegate 
 				if (debug) {
 					System.out.println("Nope, somewhere higher.");
 				}
-				
+
 				b = mid + 1;
 			}
 		}
-		
+
 		if (debug) {
 			System.out.format("I'm returning %d then.", e <= 0 ? 1 : newLineMap.size());
 		}
