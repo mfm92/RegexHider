@@ -1,9 +1,14 @@
-package org.softwarepraktikum.plugin.cdtfolding;
+package cosy.sbg.softwarepraktikum.plugin.cdtfolding;
 
 import org.eclipse.swt.graphics.RGB;
 
 public class CDTUtilities {
 	
+	/**
+	 * Helper method to create an RGB object based on its string representation.
+	 * @param rgbEncoding - string representation of an RGB object
+	 * @return the RGB object
+	 */
 	static RGB restoreRGB (String rgbEncoding) {
 		String[] values = rgbEncoding.split(" ");
 		

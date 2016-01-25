@@ -6,19 +6,19 @@
       <actionSet
             label="Test Set"
             visible="true"
-            id="org.softwarepraktikum.plugin.actionSet">
+            id="cosy.sbg.softwarepraktikum.plugin.actionSet">
          <menu
-               label="Folding Debug Menu"
+               label="Folding Overview"
                id="foldingDebugMenu">
             <separator
                   name="foldingDebugGroup">
             </separator>
          </menu>
          <action
-               class="org.softwarepraktikum.plugin.actions.FoldingDebugger"
+               class="cosy.sbg.softwarepraktikum.plugin.actions.FoldingDebuggerMenuPoint"
                icon="icons/sample.gif"
-               id="org.softwarepraktikum.plugin.actions.FoldingDebugger"
-               label="&amp;Folding Debug Action"
+               id="cosy.sbg.softwarepraktikum.plugin.actions.FoldingDebugger"
+               label="Folding Debug Action"
                menubarPath="foldingDebugMenu/foldingDebugGroup"
                toolbarPath="foldingDebugGroup"
                tooltip="Hello, Eclipse world">
@@ -29,53 +29,34 @@
    <extension
     point = "org.eclipse.ui.editors">
 	      <editor
-	            class="org.softwarepraktikum.plugin.reditor.RegexEditor"
+	            class="cosy.sbg.softwarepraktikum.plugin.reditor.RegexEditor"
 	            id="org.eclipse.ui.examples.contributions.editor"
 	            name="Regex C/C++ Editor">
 	      </editor>
 	</extension>
-   
-      <extension
-         point="org.eclipse.debug.core.launchConfigurationTypes">
-      <launchConfigurationType
-            name="Regex C/C++ Debug Configuration"
-            delegate="org.softwarepraktikum.plugin.cdtregexdebugger.FoldingLaunchConfigType"
-            modes="debug"
-            public="true"
-            sourceLocatorId="org.eclipse.cdt.debug.core.sourceLocator"
-            sourcePathComputerId="org.eclipse.cdt.debug.core.sourcePathComputer"
-            id="org.softwarepraktikum.plugin.cdthighlighting.ExampleLaunch">
-      </launchConfigurationType>
-   </extension>
-
-   <extension
-         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
-      <launchConfigurationTabGroup
-            type="org.softwarepraktikum.plugin.cdthighlighting.ExampleLaunch"
-            class="org.softwarepraktikum.plugin.cdtregexdebugger.CDTDebuggerTabGroup"
-            id="org.softwarepraktikum.plugin.cdthighlighting.ExampleTabGroup">
-      </launchConfigurationTabGroup>
-   </extension>
    
    <extension 
          point="org.eclipse.cdt.debug.core.CDebugger">
       <debugger
             platform="*"
             name="Regex C/C++ Debugger"
-            modes="run"
-            cpu="*"
-            class="org.softwarepraktikum.plugin.cdtregexdebugger.CDTFoldingDebugger"
-            id="org.softwarepraktikum.plugin.cdthighlighting.ExampleDebugger">
+            modes="run, core, attach"
+            cpu="native"
+            class="org.eclipse.cdt.debug.mi.core.GDBCDIDebugger2"
+            id="cosy.sbg.softwarepraktikum.plugin.cdthighlighting.SampleDebugger">
+            <buildIdPattern
+               pattern="cdt\.managedbuild\.config\.gnu\..*">
+         </buildIdPattern>
       </debugger>
    </extension>   
    
    <extension
          point="org.eclipse.cdt.ui.foldingStructureProviders">
       <provider
-            class="org.softwarepraktikum.plugin.cdtfolding.CDTFolderStructureProvider"
+            class="cosy.sbg.softwarepraktikum.plugin.cdtfolding.CDTFolderStructureProvider"
             id="Regex C/C++ Folding"
             name="Regex C/C++ Folding"
-            preferencesClass="org.softwarepraktikum.plugin.cdtfolding.CDTFoldingPreferenceBlock">
+            preferencesClass="cosy.sbg.softwarepraktikum.plugin.cdtfolding.CDTFoldingPreferenceBlock">
       </provider>
    </extension>
 </plugin>

@@ -1,4 +1,4 @@
-package org.softwarepraktikum.plugin.actions;
+package cosy.sbg.softwarepraktikum.plugin.actions;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,8 +14,9 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.softwarepraktikum.plugin.CDTFolderPlugin;
-import org.softwarepraktikum.plugin.cdtfolding.CDTFoldingConstants;
+
+import cosy.sbg.softwarepraktikum.plugin.CDTFolderPlugin;
+import cosy.sbg.softwarepraktikum.plugin.cdtfolding.CDTFoldingConstants;
 
 /**
  * Our sample action implements workbench action delegate. The action proxy will
@@ -25,7 +26,7 @@ import org.softwarepraktikum.plugin.cdtfolding.CDTFoldingConstants;
  * 
  * @see IWorkbenchWindowActionDelegate
  */
-public class FoldingDebugger implements IWorkbenchWindowActionDelegate {
+public class FoldingDebuggerMenuPoint implements IWorkbenchWindowActionDelegate {
 	private IWorkbenchWindow window;
 
 	boolean debug = true;
@@ -33,7 +34,7 @@ public class FoldingDebugger implements IWorkbenchWindowActionDelegate {
 	/**
 	 * The constructor.
 	 */
-	public FoldingDebugger() {
+	public FoldingDebuggerMenuPoint() {
 		System.out.println("FoldingDebugger.FoldingDebugger()");
 	}
 
@@ -55,7 +56,7 @@ public class FoldingDebugger implements IWorkbenchWindowActionDelegate {
 
 		Map<Integer, Integer> newLineMap = preProcess(content);
 
-		StringBuilder display = new StringBuilder(content);
+		StringBuilder display = new StringBuilder();
 
 		for (Map.Entry<Integer, Integer> match : getMatchingLines(regex,
 				content, newLineMap).entrySet()) {
@@ -68,7 +69,8 @@ public class FoldingDebugger implements IWorkbenchWindowActionDelegate {
 		}
 
 		MessageDialog.openInformation(window.getShell(), "Plugin",
-				"Hello, Eclipse world, your text is: " + display.toString());
+				String.format("Hello, Eclipse world, your regex is %s and we found matches"
+						+ "here:\n\n%s", regex, display.toString()));
 
 		System.out.println(display.toString());
 	}

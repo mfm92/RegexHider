@@ -1,4 +1,4 @@
-package org.softwarepraktikum.plugin.cdtfolding;
+package cosy.sbg.softwarepraktikum.plugin.cdtfolding;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,7 +24,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.softwarepraktikum.plugin.CDTFolderPlugin;
+
+import cosy.sbg.softwarepraktikum.plugin.CDTFolderPlugin;
 
 public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 
@@ -81,6 +82,10 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 				.size()]);
 	}
 
+	/**
+	 * Creating the user interface for the folding/highlighting functionality
+	 * here.
+	 */
 	@Override
 	public Control createControl (Composite parent) {
 		System.out.println("CDTFoldingPreferenceBlock.createControl()");
@@ -329,6 +334,10 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 		errorLabel.setAlignment(SWT.RIGHT);
 	}
 	
+	/**
+	 * Find out whether the user wants to fold or highlight matches
+	 * of regular expressions in source code.
+	 */
 	private void highlightOrFoldCheckBox (Composite parent) {
 		String[] choices = new String[]{
 			CDTFoldingConstants.COMBO_CHOICE_FOLD, CDTFoldingConstants.COMBO_CHOICE_HIGHLIGHT
@@ -347,6 +356,10 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 		});
 	}
 	
+	/**
+	 * Storing the colors the user picked to highlight matches of regular
+	 * expressions. 
+	 */
 	private void colorScheme (Composite parent) {
 		bgLabel = ControlFactory.createLabel(parent, CDTFoldingConstants.SELECT_BG);
 		bgColorSelector = new ColorSelector(parent);
@@ -382,6 +395,11 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 		turnOnOffColors();
 	}
 	
+	/**
+	 * Disabling the color choosers if the currently chosen action by the user
+	 * is to fold lines of source code. If the user wants to highlight something instead,
+	 * the color choosers will be enabled again.
+	 */
 	private void turnOnOffColors() {
 		if (store.getString(CDTFoldingConstants.COMBO_CHOICE).equals(CDTFoldingConstants.COMBO_CHOICE_HIGHLIGHT)) {
 			fgLabel.setVisible(true);

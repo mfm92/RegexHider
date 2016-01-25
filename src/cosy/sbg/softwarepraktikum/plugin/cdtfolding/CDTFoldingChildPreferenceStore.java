@@ -1,4 +1,4 @@
-package org.softwarepraktikum.plugin.cdtfolding;
+package cosy.sbg.softwarepraktikum.plugin.cdtfolding;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceStore;

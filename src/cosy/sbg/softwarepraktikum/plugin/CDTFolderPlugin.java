@@ -1,4 +1,4 @@
-package org.softwarepraktikum.plugin;
+package cosy.sbg.softwarepraktikum.plugin;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -25,8 +25,8 @@ public class CDTFolderPlugin extends AbstractUIPlugin {
 	 * (non-Javadoc)
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
 	 */
-	public void start(BundleContext context) throws Exception {
-		super.start(context);
+	public void start(BundleContext context) throws Exception {		
+		super.start(context);		
 		plugin = this;
 	}
 

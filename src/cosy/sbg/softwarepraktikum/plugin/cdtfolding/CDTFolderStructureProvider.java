@@ -1,18 +1,13 @@
-package org.softwarepraktikum.plugin.cdtfolding;
+package cosy.sbg.softwarepraktikum.plugin.cdtfolding;
 
-import org.eclipse.cdt.core.model.ITranslationUnit;
 import org.eclipse.cdt.internal.ui.editor.CEditor;
 import org.eclipse.cdt.internal.ui.editor.IPostSaveListener;
 import org.eclipse.cdt.ui.text.folding.ICFoldingStructureProvider;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.softwarepraktikum.plugin.reditor.RegexEditor;
 
-/*
- * TODO: Extension point: Debug, skip folded source code!
- */
+import cosy.sbg.softwarepraktikum.plugin.reditor.RegexEditor;
 
 @SuppressWarnings("restriction")
 public class CDTFolderStructureProvider implements ICFoldingStructureProvider {
@@ -25,16 +20,15 @@ public class CDTFolderStructureProvider implements ICFoldingStructureProvider {
 	
 	IPostSaveListener postSaveListener;
 	
+	/**
+	 * If the user opens a file with C source code, install a listener
+	 * that triggers folding/highlighting whenever the user saves the editor content.
+	 */
 	@Override
 	public void install (final ITextEditor editor, ProjectionViewer viewer) {
 		System.out.println("CDTFolderStructureProvider.install()");
 		
-		IPostSaveListener postSaveListener = new IPostSaveListener() {
-			@Override
-			public void saved (ITranslationUnit translationUnit, IProgressMonitor monitor) {
-				folder.apply(editor, viewer);
-			}
-		};
+		IPostSaveListener postSaveListener = (t, m) -> folder.apply(editor, viewer);
 		
 		if (editor instanceof CEditor) {
 			((CEditor) editor).removePostSaveListener(postSaveListener);
@@ -53,6 +47,9 @@ public class CDTFolderStructureProvider implements ICFoldingStructureProvider {
 		}
 	}
 
+	/**
+	 * Remove the listener whenever the user closes the source code file.
+	 */
 	@Override
 	public void uninstall () {
 		System.out.println("CDTFolderStructureProvider.uninstall()");

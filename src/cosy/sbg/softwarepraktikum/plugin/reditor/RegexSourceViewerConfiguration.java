@@ -1,4 +1,4 @@
-package org.softwarepraktikum.plugin.reditor;
+package cosy.sbg.softwarepraktikum.plugin.reditor;
 
 import org.eclipse.cdt.ui.text.CSourceViewerConfiguration;
 import org.eclipse.cdt.ui.text.IColorManager;
