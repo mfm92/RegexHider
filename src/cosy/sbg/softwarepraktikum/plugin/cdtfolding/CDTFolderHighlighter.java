@@ -84,7 +84,7 @@ public class CDTFolderHighlighter {
 			// highlight...
 			switch (actionChoice) {
 				case Folding:
-					fold(regex, content);
+					fold(regex, content, viewer);
 					break;
 				case Highlighting:
 					highlight(regex, content, viewer);
@@ -104,7 +104,7 @@ public class CDTFolderHighlighter {
 	 * to the projection annotation model of the viewer of the editor to create
 	 * the folding structure.
 	 */
-	private void fold (String regex, String content) {
+	private void fold (String regex, String content, ProjectionViewer viewer) {
 		System.out.println("CDTFolder.fold()");
 
 		// What is the first index in every line?
@@ -113,6 +113,16 @@ public class CDTFolderHighlighter {
 		// Get the index ranges of each match...
 		Set<Map.Entry<Integer, Integer>> mlSet = getMatchingLines(regex, content, newLineMap).entrySet();
 
+		/*
+		 * Update the content of the widget if necessary. This has to be done
+		 * for example if the user wants to highlight matches of a regular
+		 * expression while sections of the content of the open file are still
+		 * folded.
+		 */
+		if (viewer.getTextWidget().getCharCount() != content.length()) {
+			viewer.getTextWidget().setText(content);
+		}
+		
 		// Iterate over the computed folded sections...
 		for (FoldingSection foldedSection : getFoldedSections(newLineMap, mlSet)) {
 			ProjectionAnnotation pa = new ProjectionAnnotation();
