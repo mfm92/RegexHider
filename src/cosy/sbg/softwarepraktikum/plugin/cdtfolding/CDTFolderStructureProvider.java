@@ -3,6 +3,8 @@ package cosy.sbg.softwarepraktikum.plugin.cdtfolding;
 import org.eclipse.cdt.internal.ui.editor.CEditor;
 import org.eclipse.cdt.internal.ui.editor.IPostSaveListener;
 import org.eclipse.cdt.ui.text.folding.ICFoldingStructureProvider;
+import org.eclipse.jface.text.DocumentEvent;
+import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.ui.texteditor.ITextEditor;
