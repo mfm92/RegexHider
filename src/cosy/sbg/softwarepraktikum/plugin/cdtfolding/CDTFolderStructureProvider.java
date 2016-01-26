@@ -29,7 +29,7 @@ public class CDTFolderStructureProvider implements ICFoldingStructureProvider {
 		System.out.println("CDTFolderStructureProvider.install()");
 
 		IPostSaveListener postSaveListener = (t, m) -> folder.apply(editor, viewer);
-
+	
 		if (editor instanceof CEditor) {
 			((CEditor) editor).removePostSaveListener(postSaveListener);
 			((CEditor) editor).addPostSaveListener(postSaveListener);
@@ -41,7 +41,7 @@ public class CDTFolderStructureProvider implements ICFoldingStructureProvider {
 		if (editor instanceof RegexEditor) {
 			((RegexEditor) editor).removePostSaveListener(postSaveListener);
 			((RegexEditor) editor).addPostSaveListener(postSaveListener);
-
+			
 			this.editor = editor;
 			this.postSaveListener = postSaveListener;
 		}

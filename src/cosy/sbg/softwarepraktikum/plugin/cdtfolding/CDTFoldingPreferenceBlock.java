@@ -310,7 +310,7 @@ public class CDTFoldingPreferenceBlock implements ICFoldingPreferenceBlock {
 		Color bgColor = t.getBackground();
 		Color errorColor = new Color(null, new RGB(253, 0, 0));
 
-		t.setSize(400, 80);
+		t.setSize(300, 80);
 
 		/*
 		 * Check if the current user-specified regular expression is actually

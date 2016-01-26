@@ -32,7 +32,9 @@ public class RegexSourceViewerConfiguration extends CSourceViewerConfiguration {
 		if (reconciler != null && reconciler instanceof MonoReconciler) {
 			((MonoReconciler) reconciler).setDelay(1000000);
 		}
-
+		
+		((MonoReconciler) reconciler).setIsAllowedToModifyDocument(false);
+		
 		return reconciler;
 	}
 }
